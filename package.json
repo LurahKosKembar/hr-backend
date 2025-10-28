@@ -7,9 +7,10 @@
     "dev": "npx tsx watch server.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "migrate:make": "npx knex migrate:make",
+    "migrate": "knex migrate:latest",
     "migrate:up": "knex migrate:up",
-    "migrate:latest": "knex migrate:latest"
+    "migrate:make": "npx knex migrate:make",
+    "migrate:rollback": "knex migrate:rollback --all"
   },
   "keywords": [],
   "author": "marstech-internship",

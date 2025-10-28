@@ -10,11 +10,11 @@ const knexConfig: { [key: string]: Knex.Config } = {
       host: process.env.DB_HOST || "localhost",
       user: process.env.DB_USERNAME || "root",
       password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "marstech_dev_db",
+      database: process.env.DB_NAME || "marstech_hr_dev",
     },
     migrations: {
       directory: "./src/migrations",
-      extension: "js",
+      extension: "ts",
     },
   },
 
