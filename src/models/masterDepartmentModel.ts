@@ -43,7 +43,7 @@ export const editMasterDepartments = async ({
   name,
   id,
 }: {
-  name: string;
+  name?: string;
   id: number;
 }): Promise<Department | null> => {
   await db(DEPARTMENT_TABLE)

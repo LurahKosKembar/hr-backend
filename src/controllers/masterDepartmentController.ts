@@ -13,7 +13,7 @@ import {
   addMasterDepartmentsSchema,
   updateMasterDepartmentsSchema,
 } from "@schemas/masterDepartmentSchema.js";
-import { DatabaseError } from "types/types.js";
+import { DatabaseError } from "types/errorTypes.js";
 
 /**
  * [GET] /master-departments - Fetch all Departments
@@ -171,15 +171,6 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
 
     const validatedData = validation.data;
     const { name } = validatedData;
-
-    if (name === undefined) {
-      return errorResponse(
-        res,
-        API_STATUS.BAD_REQUEST,
-        "Setidaknya satu field (nama) harus diisi untuk pembaruan.",
-        400,
-      );
-    }
 
     const masterDepartments = await editMasterDepartments({
       name,

@@ -47,8 +47,8 @@ export const editMasterPositions = async ({
   department_id,
 }: {
   id: number;
-  name: string;
-  department_id: number;
+  name?: string;
+  department_id?: number;
 }): Promise<Position | null> => {
   await db(POSITION_TABLE)
     .where({ id })

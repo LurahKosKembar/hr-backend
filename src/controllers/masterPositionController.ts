@@ -13,7 +13,7 @@ import {
   addMasterPositionsSchema,
   updateMasterPositionsSchema,
 } from "@schemas/masterPositionSchema.js";
-import { DatabaseError } from "types/types.js";
+import { DatabaseError } from "types/errorTypes.js";
 
 /**
  * [GET] /master-positions - Fetch all Positions
@@ -181,15 +181,6 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
 
     const validatedData = validation.data;
     const { name, department_id } = validatedData;
-
-    if (name === undefined || department_id === undefined) {
-      return errorResponse(
-        res,
-        API_STATUS.BAD_REQUEST,
-        "Setidaknya satu field (nama / id departemen) harus diisi untuk pembaruan.",
-        400,
-      );
-    }
 
     const masterPositions = await editMasterPositions({
       id,
