@@ -29,7 +29,7 @@ export const getUsersById = async (id: number): Promise<User | null> =>
  * Creates new user.
  */
 export const addUsers = async (
-  data: CreateUserData,
+  data: CreateUserData
 ): Promise<Omit<User, "password">> => {
   const [id] = await db(USER_TABLE).insert(data);
 

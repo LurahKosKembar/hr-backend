@@ -28,7 +28,7 @@ export const fetchAllMasterEmployees = async (req: Request, res: Response) => {
       "Data Karyawan berhasil di dapatkan",
       employees,
       200,
-      RESPONSE_DATA_KEYS.EMPLOYEES,
+      RESPONSE_DATA_KEYS.EMPLOYEES
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -37,7 +37,7 @@ export const fetchAllMasterEmployees = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -54,7 +54,7 @@ export const fetchMasterEmployeesById = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID Karyawan tidak valid.",
-        400,
+        400
       );
     }
 
@@ -65,7 +65,7 @@ export const fetchMasterEmployeesById = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Karyawan tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -75,7 +75,7 @@ export const fetchMasterEmployeesById = async (req: Request, res: Response) => {
       "Data Karyawan berhasil didapatkan",
       employees,
       200,
-      RESPONSE_DATA_KEYS.EMPLOYEES,
+      RESPONSE_DATA_KEYS.EMPLOYEES
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -84,7 +84,7 @@ export const fetchMasterEmployeesById = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -105,7 +105,7 @@ export const createMasterEmployees = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -132,7 +132,7 @@ export const createMasterEmployees = async (req: Request, res: Response) => {
       "Data master karyawan berhasil dibuat",
       masterEmployees,
       201,
-      RESPONSE_DATA_KEYS.EMPLOYEES,
+      RESPONSE_DATA_KEYS.EMPLOYEES
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -141,7 +141,7 @@ export const createMasterEmployees = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -158,7 +158,7 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID karyawan tidak valid.",
-        400,
+        400
       );
     }
 
@@ -173,7 +173,7 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -196,7 +196,7 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Karyawan tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -206,7 +206,7 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
       "Data master karyawan berhasil diperbarui",
       masterEmployees,
       200,
-      RESPONSE_DATA_KEYS.EMPLOYEES,
+      RESPONSE_DATA_KEYS.EMPLOYEES
     );
   } catch (error) {
     appLogger.error(`Error editing employees:${error}`);
@@ -215,7 +215,7 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -232,7 +232,7 @@ export const destroyMasterEmployees = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID karyawan tidak valid.",
-        400,
+        400
       );
     }
 
@@ -243,7 +243,7 @@ export const destroyMasterEmployees = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Karyawan tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -254,7 +254,7 @@ export const destroyMasterEmployees = async (req: Request, res: Response) => {
       API_STATUS.SUCCESS,
       "Data master karyawan berhasil dihapus",
       null,
-      200,
+      200
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -266,13 +266,13 @@ export const destroyMasterEmployees = async (req: Request, res: Response) => {
         dbError.message.includes("foreign key constraint fails"))
     ) {
       appLogger.warn(
-        `Failed to delete employee ID ${req.params.id} due to constraint.`,
+        `Failed to delete employee ID ${req.params.id} due to constraint.`
       );
       return errorResponse(
         res,
         API_STATUS.CONFLICT,
         "Tidak dapat menghapus karyawan karena masih digunakan oleh Posisi lain.",
-        409,
+        409
       );
     }
 
@@ -282,7 +282,7 @@ export const destroyMasterEmployees = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };

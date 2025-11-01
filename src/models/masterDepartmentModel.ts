@@ -19,7 +19,7 @@ export const getAllMasterDepartments = async (): Promise<Department[]> =>
  * Get department by ID.
  */
 export const getMasterDepartmentsById = async (
-  id: number,
+  id: number
 ): Promise<Department | null> =>
   await db(DEPARTMENT_TABLE).where({ id }).first();
 

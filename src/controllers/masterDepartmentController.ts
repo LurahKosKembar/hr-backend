@@ -20,7 +20,7 @@ import { DatabaseError } from "types/errorTypes.js";
  */
 export const fetchAllMasterDepartments = async (
   req: Request,
-  res: Response,
+  res: Response
 ) => {
   try {
     const departments = await getAllMasterDepartments();
@@ -31,7 +31,7 @@ export const fetchAllMasterDepartments = async (
       "Data Departemen berhasil di dapatkan",
       departments,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS,
+      RESPONSE_DATA_KEYS.DEPARTMENTS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -40,7 +40,7 @@ export const fetchAllMasterDepartments = async (
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -50,7 +50,7 @@ export const fetchAllMasterDepartments = async (
  */
 export const fetchMasterDepartmentsById = async (
   req: Request,
-  res: Response,
+  res: Response
 ) => {
   try {
     // Validate and cast the ID params
@@ -60,7 +60,7 @@ export const fetchMasterDepartmentsById = async (
         res,
         API_STATUS.BAD_REQUEST,
         "ID departemen tidak valid.",
-        400,
+        400
       );
     }
 
@@ -71,7 +71,7 @@ export const fetchMasterDepartmentsById = async (
         res,
         API_STATUS.NOT_FOUND,
         "Data Departemen tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -81,7 +81,7 @@ export const fetchMasterDepartmentsById = async (
       "Data Departemen berhasil didapatkan",
       departments,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS,
+      RESPONSE_DATA_KEYS.DEPARTMENTS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -90,7 +90,7 @@ export const fetchMasterDepartmentsById = async (
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -111,7 +111,7 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -124,7 +124,7 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
       "Data master departemen berhasil dibuat",
       masterDepartments,
       201,
-      RESPONSE_DATA_KEYS.DEPARTMENTS,
+      RESPONSE_DATA_KEYS.DEPARTMENTS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -133,7 +133,7 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -150,7 +150,7 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID departemen tidak valid.",
-        400,
+        400
       );
     }
 
@@ -165,7 +165,7 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -183,7 +183,7 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Departemen tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -193,7 +193,7 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
       "Data master departemen berhasil diperbarui",
       masterDepartments,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS,
+      RESPONSE_DATA_KEYS.DEPARTMENTS
     );
   } catch (error) {
     appLogger.error(`Error editing departments:${error}`);
@@ -202,7 +202,7 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -219,7 +219,7 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID departemen tidak valid.",
-        400,
+        400
       );
     }
 
@@ -230,7 +230,7 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Departemen tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -241,7 +241,7 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
       API_STATUS.SUCCESS,
       "Data master departemen berhasil dihapus",
       null,
-      200,
+      200
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -253,13 +253,13 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
         dbError.message.includes("foreign key constraint fails"))
     ) {
       appLogger.warn(
-        `Failed to delete department ID ${req.params.id} due to constraint.`,
+        `Failed to delete department ID ${req.params.id} due to constraint.`
       );
       return errorResponse(
         res,
         API_STATUS.CONFLICT,
         "Tidak dapat menghapus departemen karena masih digunakan oleh Posisi lain.",
-        409,
+        409
       );
     }
 
@@ -269,7 +269,7 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };

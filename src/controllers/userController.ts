@@ -26,7 +26,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
       "Data User berhasil di dapatkan",
       users,
       200,
-      RESPONSE_DATA_KEYS.USERS,
+      RESPONSE_DATA_KEYS.USERS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -35,7 +35,7 @@ export const fetchAllUsers = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -52,7 +52,7 @@ export const fetchUsersById = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID User tidak valid.",
-        400,
+        400
       );
     }
 
@@ -63,7 +63,7 @@ export const fetchUsersById = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data User tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -73,7 +73,7 @@ export const fetchUsersById = async (req: Request, res: Response) => {
       "Data User berhasil didapatkan",
       users,
       200,
-      RESPONSE_DATA_KEYS.USERS,
+      RESPONSE_DATA_KEYS.USERS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -82,7 +82,7 @@ export const fetchUsersById = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -103,7 +103,7 @@ export const createUsers = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -123,7 +123,7 @@ export const createUsers = async (req: Request, res: Response) => {
       "Data user berhasil dibuat",
       Users,
       201,
-      RESPONSE_DATA_KEYS.USERS,
+      RESPONSE_DATA_KEYS.USERS
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -152,7 +152,7 @@ export const createUsers = async (req: Request, res: Response) => {
               message:
                 "Email yang dimasukkan sudah terdaftar. Silakan gunakan email lain.",
             },
-          ],
+          ]
         );
       }
 
@@ -173,7 +173,7 @@ export const createUsers = async (req: Request, res: Response) => {
               message:
                 "Pegawai ini sudah memiliki akun login. Tidak dapat membuat akun ganda.",
             },
-          ],
+          ]
         );
       }
     }
@@ -182,7 +182,7 @@ export const createUsers = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -199,7 +199,7 @@ export const updateUsers = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID User tidak valid.",
-        400,
+        400
       );
     }
 
@@ -214,7 +214,7 @@ export const updateUsers = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -235,7 +235,7 @@ export const updateUsers = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data User tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -245,7 +245,7 @@ export const updateUsers = async (req: Request, res: Response) => {
       "Data User berhasil diperbarui",
       Users,
       200,
-      RESPONSE_DATA_KEYS.USERS,
+      RESPONSE_DATA_KEYS.USERS
     );
   } catch (error) {
     appLogger.error(`Error editing users:${error}`);
@@ -254,7 +254,7 @@ export const updateUsers = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -271,7 +271,7 @@ export const destroyUsers = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID User tidak valid.",
-        400,
+        400
       );
     }
 
@@ -282,7 +282,7 @@ export const destroyUsers = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data User tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -293,7 +293,7 @@ export const destroyUsers = async (req: Request, res: Response) => {
       API_STATUS.SUCCESS,
       "Data User berhasil dihapus",
       null,
-      200,
+      200
     );
   } catch (error) {
     // Catch-all for other server errors
@@ -302,7 +302,7 @@ export const destroyUsers = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };

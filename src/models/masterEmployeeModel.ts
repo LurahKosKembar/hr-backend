@@ -25,14 +25,14 @@ export const getAllMasterEmployees = async (): Promise<Employee[]> =>
  * Get employee by ID.
  */
 export const getMasterEmployeesById = async (
-  id: number,
+  id: number
 ): Promise<Employee | null> => await db(EMPLOYEE_TABLE).where({ id }).first();
 
 /**
  * Creates new employee.
  */
 export const addMasterEmployees = async (
-  data: CreateEmployeeData,
+  data: CreateEmployeeData
 ): Promise<Employee> => {
   const [id] = await db(EMPLOYEE_TABLE).insert(data);
 

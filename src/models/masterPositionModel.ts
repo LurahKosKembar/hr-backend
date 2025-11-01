@@ -20,7 +20,7 @@ export const getAllMasterPositions = async (): Promise<Position[]> =>
  * Get position by ID.
  */
 export const getMasterPositionsById = async (
-  id: number,
+  id: number
 ): Promise<Position | null> => await db(POSITION_TABLE).where({ id }).first();
 
 /**

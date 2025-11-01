@@ -10,7 +10,7 @@ export function successResponse(
   message: string,
   data: unknown,
   httpStatusCode: number = 200,
-  dataKey: string = "data",
+  dataKey: string = "data"
 ) {
   const responseBody: Record<string, unknown> = {
     status: customStatus,
@@ -34,7 +34,7 @@ export function errorResponse(
   customStatus: string,
   message: string,
   httpStatusCode: number = 400,
-  errorDetails: unknown = null,
+  errorDetails: unknown = null
 ) {
   const responseBody: Record<string, unknown> = {
     status: customStatus,

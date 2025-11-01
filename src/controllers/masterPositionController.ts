@@ -28,7 +28,7 @@ export const fetchAllMasterPositions = async (req: Request, res: Response) => {
       "Data Posisi berhasil di dapatkan",
       positions,
       200,
-      RESPONSE_DATA_KEYS.POSITIONS,
+      RESPONSE_DATA_KEYS.POSITIONS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -37,7 +37,7 @@ export const fetchAllMasterPositions = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -54,7 +54,7 @@ export const fetchMasterPositionsById = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID posisi tidak valid.",
-        400,
+        400
       );
     }
 
@@ -65,7 +65,7 @@ export const fetchMasterPositionsById = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Posisi tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -75,7 +75,7 @@ export const fetchMasterPositionsById = async (req: Request, res: Response) => {
       "Data Posisi berhasil didapatkan",
       positions,
       200,
-      RESPONSE_DATA_KEYS.POSITIONS,
+      RESPONSE_DATA_KEYS.POSITIONS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -84,7 +84,7 @@ export const fetchMasterPositionsById = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -105,7 +105,7 @@ export const createMasterPositions = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -118,7 +118,7 @@ export const createMasterPositions = async (req: Request, res: Response) => {
       "Data master posisi berhasil dibuat",
       masterPositions,
       201,
-      RESPONSE_DATA_KEYS.POSITIONS,
+      RESPONSE_DATA_KEYS.POSITIONS
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -134,7 +134,7 @@ export const createMasterPositions = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID Departemen tidak ditemukan. Pastikan ID Departemen yang digunakan valid.",
-        400,
+        400
       );
     }
 
@@ -143,7 +143,7 @@ export const createMasterPositions = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -160,7 +160,7 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID posisi tidak valid.",
-        400,
+        400
       );
     }
 
@@ -175,7 +175,7 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
         validation.error.errors.map((err) => ({
           field: err.path[0],
           message: err.message,
-        })),
+        }))
       );
     }
 
@@ -194,7 +194,7 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Posisi tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -204,7 +204,7 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
       "Data master posisi berhasil diperbarui",
       masterPositions,
       200,
-      RESPONSE_DATA_KEYS.POSITIONS,
+      RESPONSE_DATA_KEYS.POSITIONS
     );
   } catch (error) {
     appLogger.error(`Error editing positions:${error}`);
@@ -213,7 +213,7 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };
@@ -230,7 +230,7 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
         res,
         API_STATUS.BAD_REQUEST,
         "ID posisi tidak valid.",
-        400,
+        400
       );
     }
 
@@ -241,7 +241,7 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
         res,
         API_STATUS.NOT_FOUND,
         "Data Posisi tidak ditemukan",
-        404,
+        404
       );
     }
 
@@ -252,7 +252,7 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
       API_STATUS.SUCCESS,
       "Data master posisi berhasil dihapus",
       null,
-      200,
+      200
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -264,13 +264,13 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
         dbError.message.includes("foreign key constraint fails"))
     ) {
       appLogger.warn(
-        `Failed to delete position ID ${req.params.id} due to constraint.`,
+        `Failed to delete position ID ${req.params.id} due to constraint.`
       );
       return errorResponse(
         res,
         API_STATUS.CONFLICT,
         "Tidak dapat menghapus posisi karena masih digunakan oleh pegawai lain.",
-        409,
+        409
       );
     }
 
@@ -280,7 +280,7 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server",
-      500,
+      500
     );
   }
 };

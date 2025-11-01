@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 export function setResponseHeader(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void {
   res.removeHeader("X-Powered-By");
   res.removeHeader("Vary");

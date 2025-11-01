@@ -5,5 +5,5 @@ import knexConfig from "../../../knexfile.js";
 config();
 
 export const db = knex(
-  knexConfig[process.env.NODE_ENV as string] || knexConfig.development,
+  knexConfig[process.env.NODE_ENV as string] || knexConfig.development
 );

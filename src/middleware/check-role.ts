@@ -19,7 +19,7 @@ export const checkRole =
         res,
         API_STATUS.FAILED,
         "Akses Ditolak: Pengguna tidak terautentikasi atau peran (role) hilang.",
-        401,
+        401
       );
     }
 
@@ -30,13 +30,13 @@ export const checkRole =
       next();
     } else {
       appLogger.warn(
-        `User ID ${req.user.id} with role '${userRole}' attempted to access restricted route.`,
+        `User ID ${req.user.id} with role '${userRole}' attempted to access restricted route.`
       );
       return errorResponse(
         res,
         API_STATUS.FAILED,
         "Akses Ditolak: Anda tidak memiliki izin yang diperlukan.",
-        403,
+        403
       );
     }
   };

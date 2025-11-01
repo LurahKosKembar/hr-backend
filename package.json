@@ -13,7 +13,8 @@
     "migrate:make": "npx knex migrate:make",
     "migrate:rollback": "knex migrate:rollback --all",
     "seed": "knex seed:run",
-    "seed:make": "knex seed:make"
+    "seed:make": "knex seed:make",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "marstech-internship",
