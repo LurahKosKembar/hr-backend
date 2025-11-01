@@ -10,6 +10,7 @@ import masterEmployeeRoutes from "@routes/masterEmployeeRoutes.js";
 import userRoutes from "@routes/userRoutes.js";
 import profileRoutes from "@routes/profileRoutes.js";
 import employeeAttendanceRoutes from "@routes/employeeAttendanceRoutes.js";
+import adminAttendanceRoutes from "@routes/adminAttendanceRoutes.js";
 
 const app: Application = express();
 
@@ -63,5 +64,6 @@ app.use("/api/v1/master-employees", masterEmployeeRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/profiles", profileRoutes);
 app.use("/api/v1/attendances", employeeAttendanceRoutes);
+app.use("/api/v1/attendances", adminAttendanceRoutes);
 
 export default app;

@@ -9,11 +9,10 @@ export const API_STATUS = {
 };
 
 export const RESPONSE_DATA_KEYS = {
-  // Master Data
   DEPARTMENTS: "master_departments",
   POSITIONS: "master_positions",
   EMPLOYEES: "master_employees",
-
   USERS: "users",
+  ATTENDANCES: "attendances",
   LEAVE_REQUESTS: "leave_requests",
 };

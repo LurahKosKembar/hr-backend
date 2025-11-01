@@ -43,3 +43,9 @@ export const recordCheckOut = async ({
 
   return db(ATTENDANCE_TABLE).where({ employee_id, work_date }).first();
 };
+
+/**
+ * Get all attendance.
+ */
+export const getAllAttendances = async (): Promise<Attendance[]> =>
+  await db(ATTENDANCE_TABLE).select("*");
