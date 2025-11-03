@@ -20,4 +20,5 @@ export const RESPONSE_DATA_KEYS = {
   // transaction Data
   ATTENDANCES: "attendances",
   LEAVE_REQUESTS: "leave_requests",
+  LEAVE_BALANCES: "leave_balances",
 };
