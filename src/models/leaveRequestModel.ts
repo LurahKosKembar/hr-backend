@@ -1,207 +1,77 @@
-import { Knex } from "knex";
 import { db } from "@core/config/knex.js";
 import {
-  BulkGrantData,
-  EmployeeBalanceReport,
-  LeaveBalance,
-  LeaveBalanceReport,
-  SpecificUpdateData,
-} from "types/leaveBalanceTypes.js";
+  CreateLeaveRequestData,
+  LeaveRequest,
+  UpdateLeaveStatusData,
+} from "types/leaveRequestTypes.js";
 
-const LEAVE_BALANCE_TABLE = "leave_balances";
-const EMPLOYEE_TABLE = "master_employees";
-const LEAVE_TYPE_TABLE = "master_leave_types";
-const POSITION_TABLE = "master_positions";
-const DEPARTMENT_TABLE = "master_departments";
+const LEAVE_REQUEST_TABLE = "leave_requests";
 
 /**
- * Creates or increments the leave balance for ALL active employees.
- * Uses a transaction to ensure integrity across multiple employee updates.
- * @returns The total count of employees affected (inserted or updated).
+ * Get all leave requests for Admin monitoring (can be filtered later).
  */
-export const bulkGrantLeaveBalances = async (
-  data: BulkGrantData
-): Promise<number> => {
-  // 1. Fetch all active employee IDs
-  const employees = await db(EMPLOYEE_TABLE).select("id");
+export const getAllLeaveRequests = async (): Promise<LeaveRequest[]> => {
+  return db(LEAVE_REQUEST_TABLE)
+    .select("*")
+    .orderBy("created_at", "desc") as Promise<LeaveRequest[]>;
+};
 
-  if (employees.length === 0) {
-    return 0;
-  }
+/**
+ * Get a specific leave request by ID.
+ */
+export const getLeaveRequestById = async (
+  id: number
+): Promise<LeaveRequest | null> => {
+  return db(LEAVE_REQUEST_TABLE).where({ id }).first();
+};
 
-  let affectedCount = 0;
-
-  // 2. Perform the upsert logic within a transaction
-  await db.transaction(async (trx: Knex.Transaction) => {
-    for (const employee of employees) {
-      const employeeId = employee.id;
-
-      // Attempt 1: UPDATE the existing record (if it exists)
-      const updated = await trx(LEAVE_BALANCE_TABLE)
-        .where({
-          employee_id: employeeId,
-          leave_type_id: data.leave_type_id,
-          year: data.year,
-        })
-        .increment("balance", data.amount); // Atomically add the amount
-
-      if (updated === 0) {
-        // Attempt 2: INSERT the new record (if no update occurred)
-        await trx(LEAVE_BALANCE_TABLE).insert({
-          employee_id: employeeId,
-          leave_type_id: data.leave_type_id,
-          year: data.year,
-          balance: data.amount,
-        });
-      }
-      affectedCount++;
-    }
+/**
+ * Creates a new leave request
+ */
+export const addLeaveRequest = async (
+  {
+    employee_id,
+    leave_type_id,
+    start_date,
+    end_date,
+    reason,
+    total_days,
+  }: CreateLeaveRequestData & { total_days: number } // Ensure total_days is included
+): Promise<LeaveRequest> => {
+  // 1. Prepare the payload
+  const [id] = await db(LEAVE_REQUEST_TABLE).insert({
+    employee_id,
+    leave_type_id,
+    total_days,
+    reason,
+    start_date,
+    end_date,
   });
 
-  return affectedCount;
+  return db(LEAVE_REQUEST_TABLE).where({ id }).first();
 };
 
 /**
- * Sets or overwrites the absolute leave balance for a single employee.
- * @returns The updated balance record or null if the employee/record is not found.
+ * Updates the status of a specific leave request.
  */
-export const setSpecificLeaveBalance = async (
-  data: SpecificUpdateData
-): Promise<LeaveBalance | null> => {
-  const { employee_id, leave_type_id, year, amount } = data;
+export const editLeaveRequestStatus = async (
+  data: UpdateLeaveStatusData
+): Promise<LeaveRequest | null> => {
+  const { id, new_status, approved_by_id } = data;
 
-  // 1. Attempt to update the existing record
-  const updatedCount = await db(LEAVE_BALANCE_TABLE)
-    .where({ employee_id, leave_type_id, year })
-    .update({
-      balance: amount, // Overwrite the current balance
-      updated_at: db.fn.now(),
-    });
+  await db(LEAVE_REQUEST_TABLE).where({ id }).update({
+    status: new_status,
+    approval_date: db.fn.now(),
+    approved_by_id,
+    updated_at: db.fn.now(),
+  });
 
-  // 2. If no record was updated, try to INSERT it
-  if (updatedCount === 0) {
-    // We only insert if the update failed, checking if the employee actually exists
-    // (The FK constraint will fail if the employee/type doesn't exist)
-    await db(LEAVE_BALANCE_TABLE).insert({
-      employee_id,
-      leave_type_id,
-      year,
-      balance: amount,
-    });
-    // If successful, treat it as an update/set operation
-  }
-
-  // 3. Retrieve and return the updated/inserted record
-  return db(LEAVE_BALANCE_TABLE)
-    .where({ employee_id, leave_type_id, year })
-    .first() as Promise<LeaveBalance | null>;
+  return db(LEAVE_REQUEST_TABLE).where({ id }).first();
 };
 
 /**
- * Deletes all leave balance records matching a specific type and year.
- * @returns The number of records deleted.
+ * Permanently removes a leave request record from the database.
  */
-export async function removeBulkLeaveBalances(
-  leaveTypeId: number,
-  year: number
-): Promise<number> {
-  return db(LEAVE_BALANCE_TABLE)
-    .where({
-      leave_type_id: leaveTypeId,
-      year: year,
-    })
-    .del();
+export async function removeLeaveRequest(id: number): Promise<number> {
+  return db(LEAVE_REQUEST_TABLE).where({ id }).del();
 }
-
-/**
- * Retrieves all leave balances for a single employee for the current year,
- * joining with leave type name for readability.
- */
-export const getEmployeeLeaveBalances = async (
-  employeeId: number
-): Promise<EmployeeBalanceReport[]> => {
-  const currentYear = new Date().getFullYear();
-
-  const balances = await db(LEAVE_BALANCE_TABLE)
-    .select(
-      `${LEAVE_BALANCE_TABLE}.*`,
-      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
-    )
-    .where({
-      [`${LEAVE_BALANCE_TABLE}.employee_id`]: employeeId,
-      [`${LEAVE_BALANCE_TABLE}.year`]: currentYear,
-    })
-    .leftJoin(
-      LEAVE_TYPE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.id`
-    );
-
-  return balances as EmployeeBalanceReport[];
-};
-
-/**
- * Retrieves a comprehensive report of all leave balances across all employees,
- * joining data from four tables for Admin monitoring.
- * * @returns An array of joined LeaveBalanceReport objects.
- */
-export const getAllLeaveBalanceReport = async (): Promise<
-  LeaveBalanceReport[]
-> => {
-  const reportData = await db(LEAVE_BALANCE_TABLE)
-    .select(
-      // 1. Leave Balance Data
-      `${LEAVE_BALANCE_TABLE}.id`,
-      `${LEAVE_BALANCE_TABLE}.balance`,
-      `${LEAVE_BALANCE_TABLE}.year`,
-
-      // 2. Employee Data
-      `${EMPLOYEE_TABLE}.id as employee_id`,
-      db.raw("CONCAT(??, ' ', ??) as employee_full_name", [
-        `${EMPLOYEE_TABLE}.first_name`,
-        `${EMPLOYEE_TABLE}.last_name`,
-      ]),
-
-      // 3. Position Data
-      `${POSITION_TABLE}.name as position_name`,
-
-      // 4. Department Data
-      `${DEPARTMENT_TABLE}.name as department_name`,
-
-      // 5. Leave Type Data
-      `${LEAVE_TYPE_TABLE}.id as leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
-    )
-    // JOIN 1: Employee Profile
-    .leftJoin(
-      EMPLOYEE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.employee_id`,
-      `${EMPLOYEE_TABLE}.id`
-    )
-
-    // JOIN 2: Position
-    .leftJoin(
-      POSITION_TABLE,
-      `${EMPLOYEE_TABLE}.position_id`,
-      `${POSITION_TABLE}.id`
-    )
-
-    // JOIN 3: Department
-    .leftJoin(
-      DEPARTMENT_TABLE,
-      `${POSITION_TABLE}.department_id`,
-      `${DEPARTMENT_TABLE}.id`
-    )
-
-    // JOIN 4: Leave Type
-    .leftJoin(
-      LEAVE_TYPE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.id`
-    )
-
-    // Order by name for readability
-    .orderBy("employee_full_name", "asc");
-
-  return reportData;
-};

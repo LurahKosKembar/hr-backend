@@ -8,7 +8,7 @@ import {
   getAllLeaveBalanceReport,
   removeBulkLeaveBalances,
   setSpecificLeaveBalance,
-} from "@models/leaveRequestModel.js";
+} from "@models/leaveBalanceModel.js";
 import {
   addLeaveBalanceSchema,
   updateLeaveBalanceSchema,
