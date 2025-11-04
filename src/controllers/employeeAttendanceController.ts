@@ -2,7 +2,11 @@ import { Response } from "express";
 import { API_STATUS, RESPONSE_DATA_KEYS } from "@constants/general.js";
 import { checkInSchema, checkOutSchema } from "@schemas/attendanceSchema.js";
 import { errorResponse, successResponse } from "@utils/response.js";
-import { recordCheckIn, recordCheckOut } from "@models/attendanceModel.js";
+import {
+  getEmployeeAttendances,
+  recordCheckIn,
+  recordCheckOut,
+} from "@models/attendanceModel.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
 import { getMasterEmployeesById } from "@models/masterEmployeeModel.js";
 import { appLogger } from "@utils/logger.js";
@@ -152,6 +156,37 @@ export const checkOut = async (req: AuthenticatedRequest, res: Response) => {
   } catch (error) {
     const dbError = error as unknown;
     appLogger.error(`Error creating departments:${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [GET] /attendances/ - Fetch current employee attendance
+ */
+export const fetchEmployeeAttendance = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const employeeId = req.user!.employee_id;
+    const departments = await getEmployeeAttendances(employeeId);
+
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      "Data Absensi berhasil didapatkan",
+      departments,
+      200,
+      RESPONSE_DATA_KEYS.ATTENDANCES
+    );
+  } catch (error) {
+    const dbError = error as unknown;
+    appLogger.error(`Error fetching attendance:${dbError}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,

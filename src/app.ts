@@ -69,7 +69,7 @@ app.use("/api/v1/master-employees", masterEmployeeRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/profiles", profileRoutes);
 app.use("/api/v1/attendances", employeeAttendanceRoutes);
-app.use("/api/v1/attendances", adminAttendanceRoutes);
+app.use("/api/v1/admin/attendances", adminAttendanceRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/master-leave-types", masterLeaveTypeRoutes);
 app.use("/api/v1/leave-balances", adminLeaveBalanceRoutes);
