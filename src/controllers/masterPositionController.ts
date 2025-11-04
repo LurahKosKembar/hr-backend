@@ -142,6 +142,71 @@ export const createMasterPositions = async (req: Request, res: Response) => {
       );
     }
 
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+
+      // 1. Check for Duplicate Position CODE
+      if (
+        errorMessage &&
+        (errorMessage.includes("position_code") ||
+          errorMessage.includes("uni_position_code"))
+      ) {
+        appLogger.warn(
+          "Position creation failed: Duplicate department code entry."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          [
+            {
+              field: "name",
+              message: "Kode posisi yang dimasukkan sudah ada.",
+            },
+          ]
+        );
+      }
+
+      if (
+        errorMessage &&
+        (errorMessage.includes("name") || errorMessage.includes("uni_name"))
+      ) {
+        appLogger.warn("Position creation failed: Duplicate name entry.");
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          [
+            {
+              field: "name",
+              message: "Nama posisi yang dimasukkan sudah ada.",
+            },
+          ]
+        );
+      }
+
+      if (
+        errorMessage &&
+        (errorMessage.includes("name") || errorMessage.includes("uni_name"))
+      ) {
+        appLogger.warn("Position creation failed: Duplicate name entry.");
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          [
+            {
+              field: "name",
+              message: "Nama posisi yang dimasukkan sudah ada.",
+            },
+          ]
+        );
+      }
+    }
+
     appLogger.error(`Error creating positions:${dbError}`);
     return errorResponse(
       res,
@@ -277,6 +342,27 @@ export const destroyMasterPositions = async (req: Request, res: Response) => {
         "Tidak dapat menghapus posisi karena masih digunakan oleh pegawai lain.",
         409
       );
+    }
+
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+
+      // 1. Check for Duplicate Position CODE
+      if (
+        errorMessage &&
+        (errorMessage.includes("position_code") ||
+          errorMessage.includes("uni_position_code"))
+      ) {
+        appLogger.warn(
+          "Position creation failed: Duplicate position code entry."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Kode posisi yang dimasukkan sudah ada. Gunakan kode lain.",
+          400
+        );
+      }
     }
 
     // Catch-all for other server errors

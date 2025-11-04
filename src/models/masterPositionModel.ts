@@ -65,7 +65,7 @@ export const editMasterPositions = async ({
 };
 
 /**
- * Remove existing mesin
+ * Remove existing positions
  */
 export async function removeMasterPositions(id: number): Promise<number> {
   return db(POSITION_TABLE).where({ id }).delete();

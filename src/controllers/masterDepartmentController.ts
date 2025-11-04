@@ -130,7 +130,54 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
       RESPONSE_DATA_KEYS.DEPARTMENTS
     );
   } catch (error) {
-    const dbError = error as unknown;
+    const dbError = error as DatabaseError;
+
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+
+      // 1. Check for Duplicate Department CODE
+      if (
+        errorMessage &&
+        (errorMessage.includes("department_code") ||
+          errorMessage.includes("uni_department_code"))
+      ) {
+        appLogger.warn(
+          "Department creation failed: Duplicate department code entry."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          [
+            {
+              field: "name",
+              message: "Kode departemen yang dimasukkan sudah ada.",
+            },
+          ]
+        );
+      }
+
+      if (
+        errorMessage &&
+        (errorMessage.includes("name") || errorMessage.includes("uni_name"))
+      ) {
+        appLogger.warn("Department creation failed: Duplicate name entry.");
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          [
+            {
+              field: "name",
+              message: "Nama departemen yang dimasukkan sudah ada.",
+            },
+          ]
+        );
+      }
+    }
+
     appLogger.error(`Error creating departments:${dbError}`);
     return errorResponse(
       res,
