@@ -7,9 +7,13 @@ export const addMasterPositionsSchema = z.object({
     })
     .min(3, "Nama posisi minimal 3 karakter")
     .max(100, "Nama posisi maksimal 100 karakter"),
+  position_code: z
+    .string()
+    .min(2, "Kode posisi minimal 2 karakter")
+    .max(20, "Kode posisi maksimal 20 karakter"),
   department_id: z.number({
-    invalid_type_error: "ID departemen harus berupa angka.",
-    required_error: "ID departemen wajib diisi.",
+    invalid_type_error: "ID posisi harus berupa angka.",
+    required_error: "ID posisi wajib diisi.",
   }),
 });
 
@@ -19,6 +23,11 @@ export const updateMasterPositionsSchema = z
       .string()
       .min(3, "Nama posisi minimal 3 karakter")
       .max(100, "Nama posisi maksimal 100 karakter")
+      .optional(),
+    position_code: z
+      .string()
+      .min(2, "Kode posisi minimal 2 karakter")
+      .max(20, "Kode posisi maksimal 20 karakter")
       .optional(),
     department_id: z
       .number({

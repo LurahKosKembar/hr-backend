@@ -109,8 +109,12 @@ export const createMasterPositions = async (req: Request, res: Response) => {
       );
     }
 
-    const { name, department_id } = validation.data;
-    const masterPositions = await addMasterPositions({ name, department_id });
+    const { name, department_id, position_code } = validation.data;
+    const masterPositions = await addMasterPositions({
+      name,
+      department_id,
+      position_code,
+    });
 
     return successResponse(
       res,
@@ -180,11 +184,12 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
     }
 
     const validatedData = validation.data;
-    const { name, department_id } = validatedData;
+    const { name, department_id, position_code } = validatedData;
 
     const masterPositions = await editMasterPositions({
       id,
       name,
+      position_code,
       department_id,
     });
 

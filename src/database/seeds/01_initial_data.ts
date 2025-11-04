@@ -24,37 +24,46 @@ export async function seed(knex: Knex): Promise<void> {
   // 2. Seed Departments
   const [techDeptId] = await knex(TABLE_KEYS.DEPARTMENTS).insert({
     name: "Technology",
+    department_code: "TECH",
   });
   const [hrDeptId] = await knex(TABLE_KEYS.DEPARTMENTS).insert({
     name: "Human Resources",
+    department_code: "HR",
   });
   const [salesDeptId] = await knex(TABLE_KEYS.DEPARTMENTS).insert({
     name: "Sales",
+    department_code: "SALES",
   });
   const [financeDeptId] = await knex(TABLE_KEYS.DEPARTMENTS).insert({
     name: "Finance",
+    department_code: "FIN",
   });
 
   // 3. Seed Positions
   const [backendPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Backend Developer",
     department_id: techDeptId,
+    position_code: "BDEV",
   });
   const [hrPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "HR Specialist",
     department_id: hrDeptId,
+    position_code: "HRSP",
   });
   const [salesPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Sales Associate",
     department_id: salesDeptId,
+    position_code: "SALS",
   });
   const [financePosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Accountant",
     department_id: financeDeptId,
+    position_code: "ACCT",
   });
   const [frontendPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Frontend Developer",
     department_id: techDeptId,
+    position_code: "FDEV",
   });
 
   // 4. Seed the first Employee (who will be the Admin)

@@ -2,6 +2,7 @@ import { db } from "@core/config/knex.js";
 
 interface Department {
   id: number;
+  department_code: string;
   name: string;
   created_at?: Date;
   updated_at?: Date;
@@ -28,10 +29,12 @@ export const getMasterDepartmentsById = async (
  */
 export const addMasterDepartments = async ({
   name,
+  department_code,
 }: {
   name: string;
+  department_code: string;
 }): Promise<Department> => {
-  const [id] = await db(DEPARTMENT_TABLE).insert({ name });
+  const [id] = await db(DEPARTMENT_TABLE).insert({ name, department_code });
 
   return db(DEPARTMENT_TABLE).where({ id }).first();
 };
@@ -40,15 +43,17 @@ export const addMasterDepartments = async ({
  * edit an existing department record.
  */
 export const editMasterDepartments = async ({
-  name,
   id,
+  name,
+  department_code,
 }: {
   name?: string;
   id: number;
+  department_code?: string;
 }): Promise<Department | null> => {
   await db(DEPARTMENT_TABLE)
     .where({ id })
-    .update({ name, updated_at: new Date() });
+    .update({ name, department_code, updated_at: new Date() });
   return db(DEPARTMENT_TABLE).where({ id }).first();
 };
 
