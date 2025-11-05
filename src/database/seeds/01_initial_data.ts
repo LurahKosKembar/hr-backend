@@ -44,26 +44,35 @@ export async function seed(knex: Knex): Promise<void> {
     name: "Backend Developer",
     department_id: techDeptId,
     position_code: "BDEV",
+    base_salary: 8000000,
   });
+
   const [hrPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "HR Specialist",
     department_id: hrDeptId,
     position_code: "HRSP",
+    base_salary: 6000000,
   });
+
   const [salesPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Sales Associate",
     department_id: salesDeptId,
     position_code: "SALS",
+    base_salary: 5500000,
   });
+
   const [financePosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Accountant",
     department_id: financeDeptId,
     position_code: "ACCT",
+    base_salary: 7000000,
   });
+
   const [frontendPosId] = await knex(TABLE_KEYS.POSITIONS).insert({
     name: "Frontend Developer",
     department_id: techDeptId,
     position_code: "FDEV",
+    base_salary: 8000000,
   });
 
   // 4. Seed the first Employee (who will be the Admin)

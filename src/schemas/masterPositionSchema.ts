@@ -15,6 +15,13 @@ export const addMasterPositionsSchema = z.object({
     invalid_type_error: "ID posisi harus berupa angka.",
     required_error: "ID posisi wajib diisi.",
   }),
+  base_salary: z
+    .number({
+      invalid_type_error: "Gaji pokok harus berupa angka.",
+      required_error: "Gaji pokok wajib diisi.",
+    })
+    .min(1000000, "Gaji pokok minimal 1.000.000")
+    .max(100000000, "Gaji pokok maksimal 100.000.000"),
 });
 
 export const updateMasterPositionsSchema = z
@@ -33,6 +40,13 @@ export const updateMasterPositionsSchema = z
       .number({
         invalid_type_error: "ID departemen harus berupa angka.",
       })
+      .optional(),
+    base_salary: z
+      .number({
+        invalid_type_error: "Gaji pokok harus berupa angka.",
+      })
+      .min(1000000, "Gaji pokok minimal 1.000.000")
+      .max(100000000, "Gaji pokok maksimal 100.000.000")
       .optional(),
   })
   .strict()

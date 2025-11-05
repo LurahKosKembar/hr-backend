@@ -3,6 +3,7 @@ import { db } from "@core/config/knex.js";
 interface Position {
   id: number;
   name: string;
+  base_salary: number;
   department_id: number;
   created_at?: Date;
   updated_at?: Date;
@@ -29,15 +30,18 @@ export const getMasterPositionsById = async (
 export const addMasterPositions = async ({
   name,
   position_code,
+  base_salary,
   department_id,
 }: {
   name: string;
   position_code: string;
+  base_salary: number;
   department_id: number;
 }): Promise<Position> => {
   const [id] = await db(POSITION_TABLE).insert({
     name,
     department_id,
+    base_salary,
     position_code,
   });
 
@@ -51,16 +55,22 @@ export const editMasterPositions = async ({
   id,
   name,
   position_code,
+  base_salary,
   department_id,
 }: {
   id: number;
   name?: string;
   position_code?: string;
+  base_salary?: number;
   department_id?: number;
 }): Promise<Position | null> => {
-  await db(POSITION_TABLE)
-    .where({ id })
-    .update({ name, department_id, position_code, updated_at: db.fn.now() });
+  await db(POSITION_TABLE).where({ id }).update({
+    name,
+    department_id,
+    base_salary,
+    position_code,
+    updated_at: db.fn.now(),
+  });
   return db(POSITION_TABLE).where({ id }).first();
 };
 
