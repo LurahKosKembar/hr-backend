@@ -12,6 +12,7 @@ import { getMasterEmployeesById } from "@models/masterEmployeeModel.js";
 import { appLogger } from "@utils/logger.js";
 import { formatDate } from "@utils/formatDate.js";
 import { DatabaseError } from "types/errorTypes.js";
+import { getAttendanceSessionsByDate } from "@models/attendanceSessionModel.js";
 
 /**
  * [POST] /attendances/check-in - Record Employee Check-In
@@ -49,13 +50,50 @@ export const checkIn = async (req: AuthenticatedRequest, res: Response) => {
       );
     }
 
-    // save the check out data to database
-    const workDate = formatDate();
-    const time = new Date();
+    // check if the attendance session exist or not
+    const dateNow = formatDate();
+    const attendanceSession = await getAttendanceSessionsByDate(dateNow);
+    if (!attendanceSession) {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Sesi absensi untuk sekarang belum ada. Coba lagi nanti",
+        404
+      );
+    }
+
+    // Compare current time with session open time
+    const now = new Date();
+    const openTime = new Date(`${dateNow}T${attendanceSession.open_time}`);
+    if (now < openTime) {
+      return errorResponse(
+        res,
+        API_STATUS.FAILED,
+        "Sesi absensi untuk sekarang belum ada. Coba lagi nanti",
+        403
+      );
+    }
+
+    // check if the session is already closed
+    if (attendanceSession.status === "closed") {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Sesi absensi untuk hari ini sudah ditutup.",
+        403
+      );
+    }
+
+    // Determine check-in status (late or in-time)
+    const startTime = new Date(`${dateNow}T${attendanceSession.cutoff_time}`);
+    const checkInStatus = now > startTime ? "late" : "in-time";
+
+    // Record check-in data
     const checkInData = await recordCheckIn({
       employee_id: employeeId,
-      check_in_time: time,
-      work_date: workDate,
+      session_id: attendanceSession.id,
+      check_in_time: now,
+      check_in_status: checkInStatus,
     });
 
     return successResponse(
@@ -124,13 +162,44 @@ export const checkOut = async (req: AuthenticatedRequest, res: Response) => {
       );
     }
 
+    // check if the attendance session exist or not
+    const dateNow = formatDate();
+    const attendanceSession = await getAttendanceSessionsByDate(dateNow);
+    if (!attendanceSession) {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Sesi absensi untuk sekarang belum ada. Coba lagi nanti",
+        404
+      );
+    }
+
+    // check if the session is already closed
+    if (attendanceSession.status === "closed") {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Sesi absensi untuk hari ini sudah ditutup.",
+        403
+      );
+    }
+
+    // Determine check-out status (in-time, early, overtime)
+    const now = new Date();
+    const endTime = new Date(`${dateNow}T${attendanceSession.cutoff_time}`);
+    const closeTime = new Date(`${dateNow}T${attendanceSession.close_time}`);
+
+    let checkOutStatus: "early" | "in-time" | "overtime" | "missed" = "in-time";
+
+    if (now < endTime) checkOutStatus = "early";
+    else if (now > closeTime) checkOutStatus = "overtime";
+
     // save the check out data to database
-    const workDate = formatDate();
-    const time = new Date();
     const checkOutData = await recordCheckOut({
-      check_out_time: time,
       employee_id: employeeId,
-      work_date: workDate,
+      session_id: attendanceSession.id,
+      check_out_time: now,
+      check_out_status: checkOutStatus,
     });
 
     if (!checkOutData) {

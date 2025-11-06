@@ -12,6 +12,17 @@ export const formatDate = (): string => {
 };
 
 /**
+ * Formats the current time into 'HH:mm:ss' string format.
+ */
+export function getCurrentTime() {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+/**
  * Formats a date object or string into the 'YYYY-MM-DD HH:MM:SS' format,
  */
 export const formatMariaDBDatetime = (

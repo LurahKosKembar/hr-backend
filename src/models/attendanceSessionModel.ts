@@ -5,10 +5,8 @@ import {
   GetAttendanceById,
   UpdateAttendanceSessionData,
 } from "types/attendanceSessionTypes.js";
-import { Attendance } from "types/attendanceTypes.js";
 
 const ATTENDANCE_SESSION_TABLE = "attendance_sessions";
-const EMPLOYEE_TABLE = "master_employees";
 
 /**
  * Get all attendance session
@@ -16,6 +14,14 @@ const EMPLOYEE_TABLE = "master_employees";
 export const getAllAttendanceSessions = async (): Promise<
   AttendanceSession[]
 > => await db(ATTENDANCE_SESSION_TABLE).select("*");
+
+/**
+ * Get attendance session by date.
+ */
+export const getAttendanceSessionsByDate = async (
+  date: string
+): Promise<AttendanceSession | null> =>
+  await db(ATTENDANCE_SESSION_TABLE).where({ date }).first();
 
 /**
  * Get attendance session by ID.
