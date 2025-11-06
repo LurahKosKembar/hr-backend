@@ -25,7 +25,7 @@ export const verifyToken = async (
   const JWT_SECRET = process.env.JWT_SECRET;
   if (!JWT_SECRET) {
     appLogger.error("FATAL: JWT_SECRET is not configured.");
-    errorResponse(
+    return errorResponse(
       res,
       API_STATUS.FAILED,
       "Konfigurasi server tidak lengkap.",
@@ -61,7 +61,7 @@ export const verifyToken = async (
     appLogger.error(`JWT Verification Error:${joseError.message}`);
 
     if (joseError.code === "ERR_JWT_EXPIRED") {
-      errorResponse(
+      return errorResponse(
         res,
         API_STATUS.UNAUTHORIZED,
         "Token kedaluwarsa, silakan login kembali.",
