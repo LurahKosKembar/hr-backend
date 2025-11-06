@@ -17,6 +17,7 @@ import adminLeaveBalanceRoutes from "@routes/adminLeaveBalanceRoutes.js";
 import employeeLeaveRequestRoutes from "@routes/employeeLeaveRequestRoutes.js";
 import adminLeaveRequestRoutes from "@routes/adminLeaveRequestRoute.js";
 import payrollPeriodRoutes from "@routes/payrollPeriodRoutes.js";
+import payrollRoutes from "@routes/payrollRoutes.js";
 
 const app: Application = express();
 
@@ -77,5 +78,6 @@ app.use("/api/v1/leave-balances", adminLeaveBalanceRoutes);
 app.use("/api/v1/leave-requests", employeeLeaveRequestRoutes);
 app.use("/api/v1/leave-requests", adminLeaveRequestRoutes);
 app.use("/api/v1/payroll-periods", payrollPeriodRoutes);
+app.use("/api/v1/payrolls", payrollRoutes);
 
 export default app;

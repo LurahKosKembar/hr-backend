@@ -1,4 +1,5 @@
 import { db } from "@core/config/knex.js";
+import { Knex } from "knex";
 import {
   Attendance,
   CheckInPayload,
@@ -57,3 +58,21 @@ export const getEmployeeAttendances = async (
   employeeId: number
 ): Promise<Attendance[]> =>
   await db(ATTENDANCE_TABLE).select("*").where({ employee_id: employeeId });
+
+/**
+ * Get total work days for an employee in a given date range.
+ */
+export const getTotalWorkDays = async (
+  employeeId: number,
+  startDate: string,
+  endDate: string,
+  knexInstance: Knex.Transaction
+): Promise<number> => {
+  const result = await knexInstance(ATTENDANCE_TABLE)
+    .countDistinct("work_date as total_work_days")
+    .where("employee_id", employeeId)
+    .andWhereBetween("work_date", [startDate, endDate])
+    .first();
+
+  return Number(result?.total_work_days || 0);
+};

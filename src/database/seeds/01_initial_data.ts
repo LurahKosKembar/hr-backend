@@ -10,6 +10,7 @@ const TABLE_KEYS = {
   DEPARTMENTS: "master_departments",
   LEAVE_TYPES: "master_leave_types",
   LEAVE_BALANCES: "leave_balances",
+  PAYROLL_PERIODS: "payroll_periods",
 };
 
 export async function seed(knex: Knex): Promise<void> {
@@ -121,6 +122,24 @@ export async function seed(knex: Knex): Promise<void> {
     position_id: frontendPosId,
   });
 
+  const [cindyAlyaEmployeeId] = await knex(TABLE_KEYS.EMPLOYEES).insert({
+    first_name: "Cindy",
+    last_name: "Alya",
+    contact_phone: "08122334499",
+    address: "Jl. Diponegoro 9, Yogyakarta",
+    join_date: "2024-01-10",
+    position_id: frontendPosId,
+  });
+
+  const [johnDoeEmployeeId] = await knex(TABLE_KEYS.EMPLOYEES).insert({
+    first_name: "John",
+    last_name: "Doe",
+    contact_phone: "08122334477",
+    address: "Jl. Diponegoro 11, Yogyakarta",
+    join_date: "2024-01-10",
+    position_id: hrPosId,
+  });
+
   // 5. Seed the User
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Password123!";
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
@@ -156,6 +175,18 @@ export async function seed(knex: Knex): Promise<void> {
       role: "employee",
       employee_id: davidEmployeeId,
     },
+    {
+      email: "cindy.alya@marstech.com",
+      password: hashedPassword,
+      role: "employee",
+      employee_id: cindyAlyaEmployeeId,
+    },
+    {
+      email: "john.doe@marstech.com",
+      password: hashedPassword,
+      role: "employee",
+      employee_id: johnDoeEmployeeId,
+    },
   ]);
 
   // 6. Seed Leave Types (Essential for Leave Balance API)
@@ -172,5 +203,19 @@ export async function seed(knex: Knex): Promise<void> {
     },
   ]);
 
-  console.log("Database seeded successfully with initial admin user!");
+  // 6. Seed Payroll Periods
+  await knex(TABLE_KEYS.PAYROLL_PERIODS).insert([
+    {
+      period_code: "PRD-JAN25",
+      start_date: "2025-01-01",
+      end_date: "2025-01-31",
+    },
+    {
+      period_code: "PRD-FEB25",
+      start_date: "2025-02-01",
+      end_date: "2025-02-28",
+    },
+  ]);
+
+  console.log("Database seeded successfully with initial data!");
 }

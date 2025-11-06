@@ -14,6 +14,7 @@
     "migrate:rollback": "knex migrate:rollback --all",
     "seed": "knex seed:run",
     "seed:make": "knex seed:make",
+    "db:reset": "npm run migrate:rollback && npm run migrate && npm run seed",
     "format": "prettier --write ."
   },
   "keywords": [],

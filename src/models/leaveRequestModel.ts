@@ -1,4 +1,5 @@
 import { db } from "@core/config/knex.js";
+import { Knex } from "knex";
 import {
   CreateLeaveRequestData,
   LeaveRequest,
@@ -6,6 +7,7 @@ import {
 } from "types/leaveRequestTypes.js";
 
 const LEAVE_REQUEST_TABLE = "leave_requests";
+const LEAVE_TYPE_TABLE = "master_leave_types";
 
 /**
  * Get all leave requests for Admin monitoring (can be filtered later).
@@ -75,3 +77,56 @@ export const editLeaveRequestStatus = async (
 export async function removeLeaveRequest(id: number): Promise<number> {
   return db(LEAVE_REQUEST_TABLE).where({ id }).del();
 }
+
+/**
+ * Get total approved leave days for an employee in a given date range.
+ */
+export const getTotalLeaveDays = async (
+  employeeId: number,
+  startDate: string,
+  endDate: string,
+  knexInstance: Knex.Transaction
+): Promise<number> => {
+  const result = await knexInstance(LEAVE_REQUEST_TABLE)
+    .sum("total_days as total_leave_days")
+    .where("employee_id", employeeId)
+    .andWhere("status", "approved")
+    .andWhere("start_date", ">=", startDate)
+    .andWhere("end_date", "<=", endDate)
+    .first();
+
+  return Number(result?.total_leave_days || 0);
+};
+
+/**
+ * Calculate the total salary deduction for an employee
+ * based on approved leave requests within a given period.
+ */
+export const getTotalDeductionAmount = async (
+  employeeId: number,
+  startDate: string,
+  endDate: string,
+  trx?: Knex.Transaction
+): Promise<number> => {
+  const query = db(LEAVE_REQUEST_TABLE)
+    .join(
+      LEAVE_TYPE_TABLE,
+      `${LEAVE_REQUEST_TABLE}.leave_type_id`,
+      "=",
+      `${LEAVE_TYPE_TABLE}.id`
+    )
+    .where(`${LEAVE_REQUEST_TABLE}.employee_id`, employeeId)
+    .andWhere(`${LEAVE_REQUEST_TABLE}.status`, "approved")
+    .andWhereBetween(`${LEAVE_REQUEST_TABLE}.start_date`, [startDate, endDate])
+    .andWhereBetween(`${LEAVE_REQUEST_TABLE}.end_date`, [startDate, endDate])
+    .sum({
+      total_deductions: db.raw(
+        "`leave_requests`.`total_days` * `master_leave_types`.`deduction`"
+      ),
+    })
+    .first();
+
+  const result = trx ? await query.transacting(trx) : await query;
+  console.log(result);
+  return Number(result?.total_deductions || 0);
+};

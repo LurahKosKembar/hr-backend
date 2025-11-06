@@ -10,7 +10,7 @@ const PERIODS_TABLE = "payroll_periods";
 /**
  * Get all payroll periods.
  */
-export const getALlPayrollPeriods = async (): Promise<PayrollPeriod[]> =>
+export const getAllPayrollPeriods = async (): Promise<PayrollPeriod[]> =>
   await db(PERIODS_TABLE).select("*");
 
 /**

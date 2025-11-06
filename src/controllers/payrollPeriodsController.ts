@@ -6,7 +6,7 @@ import { DatabaseError } from "types/errorTypes.js";
 import {
   addPayrollPeriods,
   editStatusPayrollPeriods,
-  getALlPayrollPeriods,
+  getAllPayrollPeriods,
   getPayrollPeriodsById,
   removePayrollPeriods,
 } from "@models/payrollPeriodsModel.js";
@@ -20,7 +20,7 @@ import {
  */
 export const fetchAllPayrollPeriods = async (req: Request, res: Response) => {
   try {
-    const payrollPeriods = await getALlPayrollPeriods();
+    const payrollPeriods = await getAllPayrollPeriods();
 
     return successResponse(
       res,
