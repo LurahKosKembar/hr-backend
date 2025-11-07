@@ -1,3 +1,5 @@
+import { appLogger } from "./logger.js";
+
 /**
  * Formats the current date into 'DD-MM-YYYY' string format.
  */
@@ -60,4 +62,43 @@ export const formatAPIResponseDatetime = (): string => {
   const seconds: string = pad(date.getSeconds());
 
   return `${year}${month}${day}${hours}${minutes}${seconds}`;
+};
+
+/**
+ * Formats a Date object or date string into a localized Indonesian format (e.g., "Jum'at, 07 November 2025").
+ */
+export const formatIndonesianDate = (
+  dateInput: Date | string | null | undefined
+): string => {
+  if (!dateInput) {
+    return "Tanggal tidak tersedia";
+  }
+
+  let dateObject: Date;
+  if (typeof dateInput === "string") {
+    dateObject = new Date(dateInput.replace(/-/g, "/"));
+  } else if (dateInput instanceof Date) {
+    dateObject = dateInput;
+  } else {
+    return "Format tanggal tidak valid";
+  }
+
+  if (isNaN(dateObject.getTime())) {
+    appLogger.error(`Invalid date value received: ${dateInput}`);
+    return "Tanggal tidak valid";
+  }
+
+  try {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    };
+
+    return new Intl.DateTimeFormat("id-ID", options).format(dateObject);
+  } catch (error) {
+    console.log(error);
+    return dateObject.toLocaleDateString("id-ID"); // Fallback to simpler format
+  }
 };

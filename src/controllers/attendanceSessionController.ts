@@ -5,6 +5,7 @@ import { appLogger } from "@utils/logger.js";
 import { DatabaseError } from "types/errorTypes.js";
 import {
   addAttendanceSessions,
+  closedAttendanceSession,
   editAttendanceSessions,
   getAllAttendanceSessions,
   getAttendanceSessionsById,
@@ -15,6 +16,7 @@ import {
   updateAttendanceSessionsSchema,
 } from "@schemas/attendanceSessionSchema.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
+import { formatIndonesianDate } from "@utils/formatDate.js";
 
 /**
  * [GET] /attendance-sessions - Fetch all Attendance session
@@ -32,7 +34,7 @@ export const fetchAllAttendanceSessions = async (
       "Data sesi absensi berhasil di dapatkan",
       attendanceSessions,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.ATTENDANCE_SESSIONS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -82,7 +84,7 @@ export const fetchAttendanceSessionsById = async (
       "Data sesi absensi berhasil didapatkan",
       attendanceSessions,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.ATTENDANCE_SESSIONS
     );
   } catch (error) {
     const dbError = error as unknown;
@@ -272,6 +274,59 @@ export const updateAttendanceSessions = async (req: Request, res: Response) => {
         );
       }
     }
+
+    appLogger.error(`Error updating attendance session: ${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [GET] /attendance-sessions/:id/closed - Closed an Attendance Session
+ */
+export const updateAttendanceSessionsStatus = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // Validate and cast the ID params
+    const id: number = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return errorResponse(
+        res,
+        API_STATUS.BAD_REQUEST,
+        "ID sesi absensi tidak valid.",
+        400
+      );
+    }
+
+    // update status to closed
+    const attendanceSession = await closedAttendanceSession(id);
+
+    if (!attendanceSession) {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "ID sesi absensi tidak ditemukan",
+        404
+      );
+    }
+    const formattedDate = formatIndonesianDate(attendanceSession.date);
+
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      `Berhasil menutup sesi absensi pada tanggal ${formattedDate}`,
+      attendanceSession,
+      200,
+      RESPONSE_DATA_KEYS.ATTENDANCE_SESSIONS
+    );
+  } catch (error) {
+    const dbError = error as DatabaseError;
 
     appLogger.error(`Error updating attendance session: ${dbError}`);
     return errorResponse(

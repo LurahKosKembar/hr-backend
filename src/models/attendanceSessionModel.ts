@@ -85,6 +85,20 @@ export const editAttendanceSessions = async (
 };
 
 /**
+ * Closed the existing attendance
+ */
+export const closedAttendanceSession = async (
+  id: number
+): Promise<AttendanceSession | null> => {
+  await db(ATTENDANCE_SESSION_TABLE).where({ id }).update({
+    status: "closed",
+    updated_at: new Date(),
+  });
+
+  return db(ATTENDANCE_SESSION_TABLE).where({ id }).first();
+};
+
+/**
  * Remove existing attendance.
  */
 export const removeAttendanceSessions = async (id: number): Promise<number> =>
