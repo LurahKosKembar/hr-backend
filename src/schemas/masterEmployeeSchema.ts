@@ -53,9 +53,3 @@ export const updateMasterEmployeesSchema = z
     message: "Setidaknya satu field harus diisi untuk pembaruan.",
     path: ["body"],
   });
-
-// --- TAMBAHKAN BARIS DI BAWAH INI ---
-
-// Membuat & mengekspor tipe TypeScript dari skema Zod
-export type CreateMasterEmployeeData = z.infer<typeof addMasterEmployeesSchema>;
-export type UpdateEmployeeData = z.infer<typeof updateMasterEmployeesSchema>;

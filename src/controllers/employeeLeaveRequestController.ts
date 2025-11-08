@@ -52,10 +52,7 @@ export const createLeaveRequest = async (
 
     // 4. Check Leave Balance (Crucial Integrity Check)
     // Note: This model function needs to return the available balance for the given type/year
-    const availableBalance = await findEmployeeBalance(
-      employeeId,
-      leave_type_id
-    );
+    const availableBalance = await findEmployeeBalance(employeeId);
 
     if (!availableBalance) {
       return errorResponse(

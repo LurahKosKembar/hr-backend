@@ -1,19 +1,19 @@
 import type { Knex } from "knex";
 
 // Assuming Employee 1 is the admin/approver
-const APPROVER_ID = 1;
+// const APPROVER_ID = 1;
 
-interface LeaveRequestRow {
-  employee_id: number;
-  leave_type_id: number;
-  start_date: string;
-  end_date: string;
-  total_days: number;
-  reason: string;
-  status: "Pending" | "Approved" | "Rejected";
-  approved_by_id: number | null;
-  approval_date: string | null;
-}
+// interface LeaveRequestRow {
+//   employee_id: number;
+//   leave_type_id: number;
+//   start_date: string;
+//   end_date: string;
+//   total_days: number;
+//   reason: string;
+//   status: "Pending" | "Approved" | "Rejected";
+//   approved_by_id: number | null;
+//   approval_date: string | null;
+// }
 
 export async function seed(knex: Knex): Promise<void> {
   // // Delete existing entries

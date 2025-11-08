@@ -80,12 +80,10 @@ export const updateEmployeeProfile = async (
       );
     }
 
-    const updateData = {
-      id: employeeId,
-      ...validation.data,
-    };
-
-    const updatedProfile = await editMasterEmployees(updateData);
+    const updatedProfile = await editMasterEmployees(
+      employeeId,
+      validation.data
+    );
 
     if (!updatedProfile) {
       return errorResponse(

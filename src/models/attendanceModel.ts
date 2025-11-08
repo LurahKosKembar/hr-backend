@@ -1,5 +1,4 @@
 import { db } from "@core/config/knex.js";
-import { formatDate } from "@utils/formatDate.js";
 import { Knex } from "knex";
 import {
   Attendance,

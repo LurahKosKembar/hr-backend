@@ -2,10 +2,12 @@ import { db } from "@core/config/knex.js";
 import {
   ATTENDANCE_SESSION_TABLE,
   ATTENDANCE_TABLE,
+  LEAVE_REQUEST_TABLE,
 } from "@constants/database.js";
+import { AttendanceSession } from "types/attendanceSessionTypes.js";
 
 /**
- * Get information for total attendance and absences
+ * Get information for total attendance and absences for one employee
  */
 export const calculateTotalAttendancesAndAbsences = async (
   employeeId: number,
@@ -16,7 +18,7 @@ export const calculateTotalAttendancesAndAbsences = async (
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
-  // 1. Get TOTAL POSSIBLE SESSIONS that already closed for the month
+  // Get TOTAL POSSIBLE SESSIONS that already closed for the month
   const [totalSessionsResult] = await db(ATTENDANCE_SESSION_TABLE)
     .whereBetween("date", [startDate, endDate])
     .where("status", "closed")
@@ -58,4 +60,46 @@ export const calculateTotalAttendancesAndAbsences = async (
     totalAttendance: totalPresent,
     totalNotAttend: totalAbsence,
   };
+};
+
+/**
+ * Calculate total attendances for specific day if the session is opened.
+ */
+export const calculateTotalAttendances = async (
+  date: string,
+  attendanceSession: AttendanceSession
+): Promise<number> => {
+  const result = await db(ATTENDANCE_TABLE)
+    .where({
+      session_id: attendanceSession.id,
+    })
+    .count("id as total")
+    .first();
+
+  return Number(result?.total ?? 0);
+};
+
+/**
+ * Calculate total leave request that are still pending
+ */
+export const calculateTotalLeaveRequest = async (
+  month: number,
+  year: number
+): Promise<Number> => {
+  // Determine the start and end dates for the month
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0);
+
+  // Get Total leave request that still pending for the month
+  const [totalLeaveRequestResult] = await db(LEAVE_REQUEST_TABLE)
+    .whereBetween("created_at", [startDate, endDate])
+    .where("status", "pending")
+    .count("id as total_leave_requests");
+
+  const totalLeaveRequest = parseInt(
+    String(totalLeaveRequestResult.total_leave_requests || 0),
+    10
+  );
+
+  return totalLeaveRequest;
 };
