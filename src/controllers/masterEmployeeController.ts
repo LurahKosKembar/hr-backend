@@ -172,12 +172,8 @@ export const createMasterEmployees = async (req: Request, res: Response) => {
 
 /**
  * [PUT] /master-employees/:id - Edit a Employee
- * --- PERBAIKAN ERROR TYPESCRIPT ADA DI SINI ---
  */
-export const updateMasterEmployees = async (
-  req: Request,
-  res: Response
-) => {
+export const updateMasterEmployees = async (req: Request, res: Response) => {
   try {
     // Validate and cast the ID params
     const id: number = parseInt(req.params.id, 10);
@@ -210,22 +206,6 @@ export const updateMasterEmployees = async (
 
     // Kirim 'id' dan 'validatedData' sebagai dua argumen terpisah
     const masterEmployees = await editMasterEmployees(id, validatedData);
-
-    /*
-    // KODE LAMA ANDA YANG MENYEBABKAN ERROR
-    const { first_name, last_name, address, contact_phone, position_id } =
-      validatedData;
-
-    const masterEmployees = await editMasterEmployees({
-      id,
-      first_name,
-      last_name,
-      address,
-      contact_phone,
-      position_id,
-    });
-    */
-    // --- PERUBAHAN SELESAI ---
 
     // Validate employee not found
     if (!masterEmployees) {

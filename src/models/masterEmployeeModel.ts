@@ -1,18 +1,14 @@
-import { db as knex } from "core/config/knex.js"; // Sesuaikan path ke koneksi Knex Anda
+import { db as knex } from "core/config/knex.js";
 import {
-  CreateMasterEmployeeData, // Asumsi nama tipe dari skema
-  UpdateEmployeeData, // Impor dari skema/tipe
-} from "@schemas/masterEmployeeSchema.js"; // Sesuaikan path jika perlu
-// Import tipe lain yang mungkin Anda perlukan dari employeeTypes
-import { Employee } from "types/employeeTypes.js"; // Pastikan path ini benar
+  CreateEmployeeData,
+  Employee,
+  UpdateEmployeeData,
+} from "types/employeeTypes.js";
 
-// --- Definisi Nama Tabel ---
 const EMPLOYEE_TABLE = "master_employees";
 const POSITION_TABLE = "master_positions";
 const DEPARTMENT_TABLE = "master_departments";
 
-// --- Kolom Pilihan untuk JOINS ---
-// Ini akan mengambil semua data karyawan + nama posisi & departemen
 const employeeSelectFields = [
   `${EMPLOYEE_TABLE}.id`,
   `${EMPLOYEE_TABLE}.first_name`,
@@ -28,9 +24,6 @@ const employeeSelectFields = [
   `${DEPARTMENT_TABLE}.name as department_name`,
 ];
 
-/**
- * Helper internal untuk join tabel
- */
 const queryBuilder = () => {
   return knex(EMPLOYEE_TABLE)
     .join(
@@ -63,7 +56,7 @@ export const getMasterEmployeesById = async (
   const employee = await queryBuilder()
     .select(employeeSelectFields)
     .where(`${EMPLOYEE_TABLE}.id`, id)
-    .first(); // .first() untuk mengambil 1 objek, bukan array
+    .first();
 
   return employee || null;
 };
@@ -71,17 +64,17 @@ export const getMasterEmployeesById = async (
 /**
  * [POST] Menambahkan karyawan baru
  */
-// KODE BARU YANG BENAR (UNTUK MYSQL)
 export const addMasterEmployees = async (
-  data: CreateMasterEmployeeData
+  data: CreateEmployeeData
 ): Promise<Employee | null> => {
-
   // 1. Lakukan insert. Hasilnya adalah array [insertId]
   const [insertId] = await knex(EMPLOYEE_TABLE).insert(data);
 
   // 2. Cek apakah insertId valid (bukan 0 atau undefined)
   if (!insertId) {
-    throw new Error("Gagal membuat karyawan, tidak ada ID yang dikembalikan dari database.");
+    throw new Error(
+      "Gagal membuat karyawan, tidak ada ID yang dikembalikan dari database."
+    );
   }
 
   // 3. Gunakan 'insertId' yang valid untuk mengambil data lengkap
@@ -97,7 +90,6 @@ export const editMasterEmployees = async (
   id: number,
   data: UpdateEmployeeData
 ): Promise<Employee | null> => {
-  // 'id' dan 'data' sekarang terpisah, error TypeScript hilang
   const affectedRows = await knex(EMPLOYEE_TABLE)
     .where({ id: id })
     .update(data);
@@ -122,4 +114,17 @@ export const removeMasterEmployees = async (
     return null; // Karyawan tidak ditemukan
   }
   return affectedRows;
+};
+
+export const totalMasterEmployees = async (): Promise<number> => {
+  const [totalMasterEmployeeResult] = await knex(EMPLOYEE_TABLE).count(
+    "id as total_employees"
+  );
+
+  const totalMasterEmployees = parseInt(
+    String(totalMasterEmployeeResult.total_employees || 0),
+    10
+  );
+
+  return totalMasterEmployees;
 };

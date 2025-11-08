@@ -207,7 +207,7 @@ export const getAllLeaveBalanceReport = async (): Promise<
  */
 export const findEmployeeBalance = async (
   employeeId: number
-): Promise<LeaveBalanceUser[]> => {
+): Promise<LeaveBalanceUser> => {
   return await db(LEAVE_BALANCE_TABLE)
     .join(
       LEAVE_TYPE_TABLE,
@@ -247,4 +247,15 @@ export const deductLeaveBalance = async (
   return db(LEAVE_BALANCE_TABLE)
     .where({ employee_id, leave_type_id, year: currentYear })
     .first();
+};
+
+/**
+ * Calculate the grand total of all leave balances.
+ */
+export const calculateTotalLeaveBalance = async (): Promise<number> => {
+  const [result] = await db(LEAVE_BALANCE_TABLE).sum({
+    total_balance: "balance",
+  });
+
+  return Number(result.total_balance || 0);
 };
