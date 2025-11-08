@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: hr-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+    networks:
+      - titan-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: titan-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: titan
+      MYSQL_USER: titan
+      MYSQL_PASSWORD: titanpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - titan-network
+
+volumes:
+  mysql_data:
+
+networks:
+  titan-network:
