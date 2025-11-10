@@ -8,6 +8,7 @@
 export const USER_TABLE = "users";
 export const EMPLOYEE_TABLE = "master_employees";
 export const POSITION_TABLE = "master_positions";
+export const DIVISION_TABLE = "master_divisions";
 export const DEPARTMENT_TABLE = "master_departments";
 
 // Attendance Tables

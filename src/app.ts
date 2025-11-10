@@ -5,6 +5,7 @@ import { httpLogger } from "@utils/logger.js";
 import { setResponseHeader } from "@middleware/set-headers.js";
 
 import masterDepartmentRoutes from "@routes/masterDepartmentRoutes.js";
+import masterDivisionRoutes from "@routes/masterDivisionRoutes.js";
 import masterPositionRoutes from "@routes/masterPositionRoutes.js";
 import masterEmployeeRoutes from "@routes/masterEmployeeRoutes.js";
 import userRoutes from "@routes/userRoutes.js";
@@ -70,6 +71,7 @@ app.get("/", setResponseHeader, (req: Request, res: Response) => {
 // ||                    ROUTE REGISTERING GOES HERE                 ||
 // ====================================================================
 app.use("/api/v1/master-departments", masterDepartmentRoutes);
+app.use("/api/v1/master-divisions", masterDivisionRoutes);
 app.use("/api/v1/master-positions", masterPositionRoutes);
 app.use("/api/v1/master-employees", masterEmployeeRoutes);
 app.use("/api/v1/users", userRoutes);

@@ -1,41 +1,38 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../utils/response.js";
 import { API_STATUS, RESPONSE_DATA_KEYS } from "@constants/general.js";
-import {
-  addMasterDepartments,
-  editMasterDepartments,
-  getAllMasterDepartments,
-  getMasterDepartmentsById,
-  removeMasterDepartments,
-} from "@models/masterDepartmentModel.js";
 import { appLogger } from "@utils/logger.js";
-import {
-  addMasterDepartmentsSchema,
-  updateMasterDepartmentsSchema,
-} from "@schemas/masterDepartmentSchema.js";
 import { DatabaseError } from "types/errorTypes.js";
+import {
+  addMasterDivisions,
+  editMasterDivisions,
+  getAllMasterDivision,
+  getMasterDivisionsById,
+  removeMasterDivision,
+} from "@models/masterDivisionModel.js";
+import {
+  addMasterDivisionsSchema,
+  updateMasterDivisionsSchema,
+} from "@schemas/masterDivisionSchema.js";
 
 /**
- * [GET] /master-departments - Fetch all Departments
+ * [GET] /master-divisions - Fetch all Divisions
  */
-export const fetchAllMasterDepartments = async (
-  req: Request,
-  res: Response
-) => {
+export const fetchAllMasterDivisions = async (req: Request, res: Response) => {
   try {
-    const departments = await getAllMasterDepartments();
+    const divisions = await getAllMasterDivision();
 
     return successResponse(
       res,
       API_STATUS.SUCCESS,
-      "Data Departemen berhasil di dapatkan",
-      departments,
+      "Data Divisi berhasil di dapatkan",
+      divisions,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.DIVISIONS
     );
   } catch (error) {
     const dbError = error as unknown;
-    appLogger.error(`Error fetching departments:${dbError}`);
+    appLogger.error(`Error fetching divisions:${dbError}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,
@@ -46,12 +43,9 @@ export const fetchAllMasterDepartments = async (
 };
 
 /**
- * [GET] /master-departments/:id - Fetch Department by id
+ * [GET] /master-divisions/:id - Fetch Division by id
  */
-export const fetchMasterDepartmentsById = async (
-  req: Request,
-  res: Response
-) => {
+export const fetchMasterDivisionsById = async (req: Request, res: Response) => {
   try {
     // Validate and cast the ID params
     const id: number = parseInt(req.params.id, 10);
@@ -59,18 +53,18 @@ export const fetchMasterDepartmentsById = async (
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID departemen tidak valid.",
+        "ID divisi tidak valid.",
         400
       );
     }
 
-    const departments = await getMasterDepartmentsById(id);
+    const divisions = await getMasterDivisionsById(id);
 
-    if (!departments) {
+    if (!divisions) {
       return errorResponse(
         res,
         API_STATUS.NOT_FOUND,
-        "Data Departemen tidak ditemukan",
+        "Data Divisi tidak ditemukan",
         404
       );
     }
@@ -78,14 +72,14 @@ export const fetchMasterDepartmentsById = async (
     return successResponse(
       res,
       API_STATUS.SUCCESS,
-      "Data Departemen berhasil didapatkan",
-      departments,
+      "Data Divisi berhasil didapatkan",
+      divisions,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.DIVISIONS
     );
   } catch (error) {
     const dbError = error as unknown;
-    appLogger.error(`Error fetching departments:${dbError}`);
+    appLogger.error(`Error fetching divisions:${dbError}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,
@@ -96,11 +90,11 @@ export const fetchMasterDepartmentsById = async (
 };
 
 /**
- * [POST] /master-departments - Create a new Department
+ * [POST] /master-divisions - Create a new Division
  */
-export const createMasterDepartments = async (req: Request, res: Response) => {
+export const createMasterDivisions = async (req: Request, res: Response) => {
   try {
-    const validation = addMasterDepartmentsSchema.safeParse(req.body);
+    const validation = addMasterDivisionsSchema.safeParse(req.body);
 
     if (!validation.success) {
       return errorResponse(
@@ -115,19 +109,20 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
       );
     }
 
-    const { name, description } = validation.data;
-    const masterDepartments = await addMasterDepartments({
+    const { name, department_code, description } = validation.data;
+    const masterDivisions = await addMasterDivisions({
       name,
+      department_code,
       description,
     });
 
     return successResponse(
       res,
       API_STATUS.SUCCESS,
-      "Data master departemen berhasil dibuat",
-      masterDepartments,
+      "Data master divisi berhasil dibuat",
+      masterDivisions,
       201,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.DIVISIONS
     );
   } catch (error) {
     const dbError = error as DatabaseError;
@@ -135,14 +130,14 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
     if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
       const errorMessage = dbError.sqlMessage || dbError.message;
 
-      // 1. Check for Duplicate Department CODE
+      // Check for Duplicate Division CODE
       if (
         errorMessage &&
-        (errorMessage.includes("department_code") ||
-          errorMessage.includes("uni_department_code"))
+        (errorMessage.includes("division_code") ||
+          errorMessage.includes("uni_division_code"))
       ) {
         appLogger.warn(
-          "Department creation failed: Duplicate department code entry."
+          "Department creation failed: Duplicate division code entry."
         );
         return errorResponse(
           res,
@@ -152,14 +147,28 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
           [
             {
               field: "name",
-              message: "Kode departemen yang dimasukkan sudah ada.",
+              message: "Kode divisi yang dimasukkan sudah ada.",
             },
           ]
         );
       }
     }
 
-    appLogger.error(`Error creating departments:${dbError}`);
+    //  Check if the department code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn(
+        "Division creation failed: department_code does not exist."
+      );
+
+      return errorResponse(res, API_STATUS.BAD_REQUEST, "Validasi gagal", 400, [
+        {
+          field: "department_code",
+          message: "Kode departemen tidak ditemukan.",
+        },
+      ]);
+    }
+
+    appLogger.error(`Error creating divisions:${dbError}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,
@@ -170,9 +179,9 @@ export const createMasterDepartments = async (req: Request, res: Response) => {
 };
 
 /**
- * [PUT] /master-departments/:id - Edit a Department
+ * [PUT] /master-divisions/:id - Edit a Division
  */
-export const updateMasterDepartments = async (req: Request, res: Response) => {
+export const updateMasterDivisions = async (req: Request, res: Response) => {
   try {
     // Validate and cast the ID params
     const id: number = parseInt(req.params.id, 10);
@@ -180,13 +189,13 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID departemen tidak valid.",
+        "ID divisi tidak valid.",
         400
       );
     }
 
     // Validate request body
-    const validation = updateMasterDepartmentsSchema.safeParse(req.body);
+    const validation = updateMasterDivisionsSchema.safeParse(req.body);
     if (!validation.success) {
       return errorResponse(
         res,
@@ -201,20 +210,21 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
     }
 
     const validatedData = validation.data;
-    const { name, description } = validatedData;
+    const { name, department_code, description } = validatedData;
 
-    const masterDepartments = await editMasterDepartments({
+    const masterDivisions = await editMasterDivisions({
       id,
       name,
+      department_code,
       description,
     });
 
     // Validate department not found
-    if (!masterDepartments) {
+    if (!masterDivisions) {
       return errorResponse(
         res,
         API_STATUS.NOT_FOUND,
-        "Data Departemen tidak ditemukan",
+        "Data Divisi tidak ditemukan",
         404
       );
     }
@@ -222,14 +232,29 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
     return successResponse(
       res,
       API_STATUS.SUCCESS,
-      "Data master departemen berhasil diperbarui",
-      masterDepartments,
+      "Data master divisi berhasil diperbarui",
+      masterDivisions,
       200,
-      RESPONSE_DATA_KEYS.DEPARTMENTS
+      RESPONSE_DATA_KEYS.DIVISIONS
     );
   } catch (error) {
-    appLogger.error(`Error editing departments:${error}`);
+    const dbError = error as DatabaseError;
 
+    //  Check if the department code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn(
+        "Division creation failed: department_code does not exist."
+      );
+
+      return errorResponse(res, API_STATUS.BAD_REQUEST, "Validasi gagal", 400, [
+        {
+          field: "department_code",
+          message: "Kode departemen tidak ditemukan.",
+        },
+      ]);
+    }
+
+    appLogger.error(`Error editing divisions:${error}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,
@@ -240,9 +265,9 @@ export const updateMasterDepartments = async (req: Request, res: Response) => {
 };
 
 /**
- * [DELETE] /master-departments/:id - Delete a Department
+ * [DELETE] /master-divisions/:id - Delete a Division
  */
-export const destroyMasterDepartments = async (req: Request, res: Response) => {
+export const destroyMasterDivisions = async (req: Request, res: Response) => {
   try {
     // Validate and cast the ID params
     const id: number = parseInt(req.params.id, 10);
@@ -250,23 +275,23 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID departemen tidak valid.",
+        "ID divisi tidak valid.",
         400
       );
     }
 
-    const existing = await getMasterDepartmentsById(id);
+    const existing = await getMasterDivisionsById(id);
 
     if (!existing) {
       return errorResponse(
         res,
         API_STATUS.NOT_FOUND,
-        "Data Departemen tidak ditemukan",
+        "Data Divisi tidak ditemukan",
         404
       );
     }
 
-    await removeMasterDepartments(existing.id);
+    await removeMasterDivision(existing.id);
 
     return successResponse(
       res,
@@ -290,13 +315,13 @@ export const destroyMasterDepartments = async (req: Request, res: Response) => {
       return errorResponse(
         res,
         API_STATUS.CONFLICT,
-        "Tidak dapat menghapus departemen karena masih digunakan oleh Divisi lain.",
+        "Tidak dapat menghapus divisi karena masih digunakan oleh Posisi lain.",
         409
       );
     }
 
     // Catch-all for other server errors
-    appLogger.error(`Error editing departments:${error}`);
+    appLogger.error(`Error editing divisions:${error}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,

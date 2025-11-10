@@ -109,12 +109,12 @@ export const createMasterPositions = async (req: Request, res: Response) => {
       );
     }
 
-    const { name, department_id, base_salary, position_code } = validation.data;
+    const { name, division_code, base_salary, description } = validation.data;
     const masterPositions = await addMasterPositions({
       name,
-      department_id,
+      division_code,
       base_salary,
-      position_code,
+      description,
     });
 
     return successResponse(
@@ -250,14 +250,14 @@ export const updateMasterPositions = async (req: Request, res: Response) => {
     }
 
     const validatedData = validation.data;
-    const { name, department_id, base_salary, position_code } = validatedData;
+    const { name, division_code, base_salary, description } = validatedData;
 
     const masterPositions = await editMasterPositions({
       id,
       name,
-      position_code,
+      division_code,
       base_salary,
-      department_id,
+      description,
     });
 
     // Validate position not found

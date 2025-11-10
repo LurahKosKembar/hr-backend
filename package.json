@@ -13,6 +13,7 @@
     "migrate:up": "knex migrate:up",
     "migrate:prod": "knex migrate:latest --knexfile=./dist/knexfile.js",
     "migrate:rollback": "knex migrate:rollback --all",
+    "migrate:make": "knex migrate:make",
     "seed": "knex seed:run",
     "seed:prod": "knex seed:run --knexfile=./dist/knexfile.js",
     "seed:make": "knex seed:make",

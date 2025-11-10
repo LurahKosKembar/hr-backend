@@ -11,6 +11,7 @@ export const API_STATUS = {
 export const RESPONSE_DATA_KEYS = {
   // Master Data
   DEPARTMENTS: "master_departments",
+  DIVISIONS: "master_divisions",
   POSITIONS: "master_positions",
   EMPLOYEES: "master_employees",
   LEAVE_TYPES: "leave_types",

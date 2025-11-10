@@ -1,12 +1,11 @@
 import { db } from "@core/config/knex.js";
+import { DEPARTMENT_TABLE } from "@constants/database.js";
 import {
   CreateDepartment,
   Department,
   GetAllDepartment,
   UpdateDepartment,
 } from "types/masterDepartmentTypes.js";
-
-const DEPARTMENT_TABLE = "master_departments";
 
 /**
  * Function for generating department code
@@ -15,7 +14,7 @@ async function generateDepartmentCode() {
   const PREFIX = "DPT";
   const PAD_LENGTH = 7;
 
-  const lastRow = await db("master_departments")
+  const lastRow = await db(DEPARTMENT_TABLE)
     .select("department_code")
     .orderBy("id", "desc")
     .first();

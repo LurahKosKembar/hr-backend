@@ -9,6 +9,7 @@ export interface Department {
 
 export interface GetAllDepartment {
   id: number;
+  department_code: string;
   name: string;
 }
 
