@@ -2,7 +2,7 @@ import { Response } from "express";
 import { API_STATUS, RESPONSE_DATA_KEYS } from "@constants/general.js";
 import { errorResponse, successResponse } from "@utils/response.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
-import { getMasterEmployeesById } from "@models/masterEmployeeModel.js";
+import { getMasterEmployeesByCode } from "@models/masterEmployeeModel.js";
 import { appLogger } from "@utils/logger.js";
 import { calculateTotalAttendancesAndAbsences } from "@models/dashboardModel.js";
 import { findEmployeeBalance } from "@models/leaveBalanceModel.js";
@@ -12,13 +12,11 @@ import { DatabaseError } from "types/errorTypes.js";
  * [GET] /metrics - Fetch employees data metrics
  */
 export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
-  // FIX: Because the relation is changed from id to employee code
-  // We need to changed it too
-  const employeeId = 2;
+  const employeeCode = req.user!.employee_code;
 
   try {
     // check if the employee exist or not in database
-    const profile = await getMasterEmployeesById(employeeId);
+    const profile = await getMasterEmployeesByCode(employeeCode);
     if (!profile) {
       appLogger.error(
         `FATAL: User ID ${req.user!.id} has no linked Employee profile.`
@@ -35,6 +33,7 @@ export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
     const now = new Date();
     const month = parseInt(req.query.month as string) || now.getMonth() + 1;
     const year = parseInt(req.query.year as string) || now.getFullYear();
+    const employeeId = profile.id;
 
     const attendanceMetrics = await calculateTotalAttendancesAndAbsences(
       employeeId,
