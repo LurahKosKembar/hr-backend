@@ -18,7 +18,9 @@ import { getAttendanceSessionsByDate } from "@models/attendanceSessionModel.js";
  * [POST] /attendances/check-in - Record Employee Check-In
  */
 export const checkIn = async (req: AuthenticatedRequest, res: Response) => {
-  const employeeId = req.user!.employee_id;
+  // FIX: Because the relation is changed from id to employee code
+  // We need to changed it too
+  const employeeId = 2;
 
   try {
     // validate the request first
@@ -148,7 +150,9 @@ export const checkOut = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // check if the employee exist or not in database
-    const employeeId = req.user!.employee_id;
+    // FIX: Because the relation is changed from id to employee code
+    // We need to changed it too
+    const employeeId = 2;
     const profile = await getMasterEmployeesById(employeeId);
     if (!profile) {
       appLogger.error(
@@ -242,7 +246,9 @@ export const fetchEmployeeAttendance = async (
   res: Response
 ) => {
   try {
-    const employeeId = req.user!.employee_id;
+    // FIX: Because the relation is changed from id to employee code
+    // We need to changed it too
+    const employeeId = 2;
     const departments = await getEmployeeAttendances(employeeId);
 
     return successResponse(

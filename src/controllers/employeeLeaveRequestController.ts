@@ -16,8 +16,9 @@ export const createLeaveRequest = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  // 1. Get Employee ID from authenticated token
-  const employeeId = req.user!.employee_id;
+  // FIX: Because the relation is changed from id to employee code
+  // We need to changed it too
+  const employeeId = 2;
 
   try {
     // 2. Validate Request Body

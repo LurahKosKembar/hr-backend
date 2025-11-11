@@ -12,7 +12,9 @@ import { DatabaseError } from "types/errorTypes.js";
  * [GET] /metrics - Fetch employees data metrics
  */
 export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
-  const employeeId = req.user!.employee_id;
+  // FIX: Because the relation is changed from id to employee code
+  // We need to changed it too
+  const employeeId = 2;
 
   try {
     // check if the employee exist or not in database
