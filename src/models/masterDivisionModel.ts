@@ -4,6 +4,7 @@ import {
   CreateDivision,
   Division,
   GetAllDivision,
+  GetDivisionById,
   UpdateDivision,
 } from "types/masterDivisionTypes.js";
 
@@ -52,7 +53,16 @@ export const getAllMasterDivision = async (): Promise<GetAllDivision[]> =>
  */
 export const getMasterDivisionsById = async (
   id: number
-): Promise<Division | null> => await db(DIVISION_TABLE).where({ id }).first();
+): Promise<GetDivisionById | null> =>
+  await db(DIVISION_TABLE)
+    .select("master_divisions.*", "master_departments.name as department_name")
+    .leftJoin(
+      "master_departments",
+      "master_divisions.department_code",
+      "master_departments.department_code"
+    )
+    .where({ "master_divisions.id": id })
+    .first();
 
 /**
  * Creates new division.

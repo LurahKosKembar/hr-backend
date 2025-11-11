@@ -8,6 +8,10 @@ export interface Division {
   updated_at?: Date;
 }
 
+export interface GetDivisionById extends Division {
+  department_name: string;
+}
+
 export interface GetAllDivision {
   id: number;
   division_code: string;

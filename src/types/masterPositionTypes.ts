@@ -8,6 +8,12 @@ export interface Position {
   updated_at?: Date;
 }
 
+export interface GetPositionById extends Position {
+  division_name: string;
+  department_code: string;
+  department_name: string;
+}
+
 export interface GetAllPosition {
   id: number;
   position_code: string;
