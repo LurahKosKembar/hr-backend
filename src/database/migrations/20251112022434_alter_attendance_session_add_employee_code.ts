@@ -15,9 +15,9 @@ export async function up(knex: Knex): Promise<void> {
       .string("created_by", 10)
       .references("user_code")
       .inTable(EMPLOYEES_TABLE)
-      .ondelete("restrict")
+      .onDelete("restrict")
       .unique()
-      .notnullable()
+      .notNullable()
       .after("close_time");
   });
 }
