@@ -12,10 +12,14 @@ const TABLE_KEYS = {
   LEAVE_TYPES: "master_leave_types",
   LEAVE_BALANCES: "leave_balances",
   PAYROLL_PERIODS: "payroll_periods",
+  ATTENDANCES: "attendances",
+  ATTENDANCE_SESSION_TABLE: "attendance_sessions",
 };
 
 export async function seed(knex: Knex): Promise<void> {
   // 1. Deletes ALL existing entries in reverse order of dependency
+  await knex(TABLE_KEYS.ATTENDANCES).del();
+  await knex(TABLE_KEYS.ATTENDANCE_SESSION_TABLE).del();
   await knex(TABLE_KEYS.USERS).del();
   await knex(TABLE_KEYS.LEAVE_BALANCES).del();
   await knex(TABLE_KEYS.EMPLOYEES).del();
