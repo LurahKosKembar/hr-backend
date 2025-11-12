@@ -7,7 +7,7 @@ import {
   getAllMasterLeaveTypes,
   getMasterLeaveTypesById,
   removeMasterLeaveTypes,
-} from "@models/leaveTypeModel.js";
+} from "@models/masterLeaveTypeModel.js";
 import { appLogger } from "@utils/logger.js";
 import {
   addMasterLeaveTypesSchema,
@@ -112,12 +112,8 @@ export const createMasterLeaveTypes = async (req: Request, res: Response) => {
       );
     }
 
-    const { name, deduction, description } = validation.data;
-    const masterLeaveTypes = await addMasterLeaveTypes({
-      name,
-      deduction,
-      description,
-    });
+    const leaveTypeData = validation.data;
+    const masterLeaveTypes = await addMasterLeaveTypes(leaveTypeData);
 
     return successResponse(
       res,
@@ -128,7 +124,25 @@ export const createMasterLeaveTypes = async (req: Request, res: Response) => {
       RESPONSE_DATA_KEYS.LEAVE_TYPES
     );
   } catch (error) {
-    const dbError = error as unknown;
+    const dbError = error as DatabaseError;
+
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+      const validationErrors = [];
+
+      // --- Duplicate Leave Type CODE ---
+      if (
+        errorMessage &&
+        (errorMessage.includes("type_code") ||
+          errorMessage.includes("uni_type_code"))
+      ) {
+        validationErrors.push({
+          field: "type",
+          message: "Kode tipe cuti yang dimasukkan sudah ada.",
+        });
+      }
+    }
+
     appLogger.error(`Error creating leave types:${dbError}`);
     return errorResponse(
       res,
@@ -170,14 +184,10 @@ export const updateMasterLeaveTypes = async (req: Request, res: Response) => {
       );
     }
 
-    const validatedData = validation.data;
-    const { name, deduction, description } = validatedData;
-
+    const leaveTypeData = validation.data;
     const masterLeaveTypes = await editMasterLeaveTypes({
       id,
-      name,
-      deduction,
-      description,
+      ...leaveTypeData,
     });
 
     // Validate leave type not found

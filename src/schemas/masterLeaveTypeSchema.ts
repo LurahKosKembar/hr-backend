@@ -17,8 +17,7 @@ export const addMasterLeaveTypesSchema = z.object({
   description: z
     .string()
     .max(255, "Deskripsi maksimal 255 karakter")
-    .optional()
-    .nullable(),
+    .optional(),
 });
 
 export const updateMasterLeaveTypesSchema = z
@@ -40,8 +39,7 @@ export const updateMasterLeaveTypesSchema = z
     description: z
       .string()
       .max(255, "Deskripsi maksimal 255 karakter")
-      .optional()
-      .nullable(),
+      .optional(),
   })
   .strict("Terdapat field yang tidak diperbolehkan.")
   .refine((data) => Object.keys(data).length > 0, {
