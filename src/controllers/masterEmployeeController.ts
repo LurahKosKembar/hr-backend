@@ -328,6 +328,18 @@ export const updateMasterEmployees = async (req: Request, res: Response) => {
       }
     }
 
+    //  Check if the position code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn("Employee creation failed: position_code does not exist.");
+
+      return errorResponse(res, API_STATUS.BAD_REQUEST, "Validasi gagal", 400, [
+        {
+          field: "position_code",
+          message: "Kode posisi tidak ditemukan.",
+        },
+      ]);
+    }
+
     appLogger.error(`Error editing employees:${error}`);
     return errorResponse(
       res,
