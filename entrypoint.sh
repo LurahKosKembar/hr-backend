@@ -24,10 +24,6 @@ const conn = mysql.createConnection({
   password: process.env.DB_PASSWORD
 });
 
-console.log(process.env.DB_HOST)
-console.log(process.env.DB_PORT)
-console.log(process.env.DB_USERNAME)
-console.log(process.env.DB_PASSWORD)
 // Try to connect. If an error occurs (like connection refused), exit with code 1.
 conn.connect(err => {
   if (err) {
