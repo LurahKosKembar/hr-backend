@@ -56,6 +56,6 @@ export async function down(knex: Knex): Promise<void> {
       .inTable(ATTENDANCE_SESSIONS_TABLE)
       .onDelete("cascade");
 
-    table.unique(["employee_code", "session_code"]);
+    table.unique(["employee_id", "session_id"]);
   });
 }

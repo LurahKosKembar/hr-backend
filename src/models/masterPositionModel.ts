@@ -12,7 +12,7 @@ import {
  * Function for generating position code
  */
 async function generatePositionCode() {
-  const PREFIX = "PST";
+  const PREFIX = "POS";
   const PAD_LENGTH = 7;
 
   const lastRow = await db(POSITION_TABLE)

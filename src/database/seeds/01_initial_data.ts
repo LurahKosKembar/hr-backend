@@ -382,11 +382,13 @@ export async function seed(knex: Knex): Promise<void> {
   await knex(TABLE_KEYS.LEAVE_TYPES).insert([
     {
       name: "Cuti Tahunan",
+      type_code: "TCT0000001",
       deduction: 10000,
       description: "Cuti Tahunan Karyawan",
     },
     {
       name: "Cuti Sakit",
+      type_code: "TCT0000002",
       deduction: 0,
       description: "Cuti Sakit (Wajib ada surat dokter)",
     },
