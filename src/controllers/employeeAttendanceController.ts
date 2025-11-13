@@ -54,7 +54,6 @@ export const checkIn = async (req: AuthenticatedRequest, res: Response) => {
     // check if the attendance session exist or not
     const dateNow = formatDate();
     const attendanceSession = await getAttendanceSessionsByDate(dateNow);
-    console.log(attendanceSession);
     if (!attendanceSession) {
       return errorResponse(
         res,
@@ -67,8 +66,10 @@ export const checkIn = async (req: AuthenticatedRequest, res: Response) => {
     // Compare current time with session open time
     const now = new Date();
     const openTime = new Date(`${dateNow}T${attendanceSession.open_time}`);
-    console.log("now: ", now);
-    console.log("openTime: ", openTime);
+    console.log("now (local):", now.toString());
+    console.log("now (UTC):", now.toISOString());
+    console.log("openTime (local):", openTime.toString());
+    console.log("openTime (UTC):", openTime.toISOString());
     if (now < openTime) {
       return errorResponse(
         res,
