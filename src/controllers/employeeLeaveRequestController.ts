@@ -5,7 +5,7 @@ import { appLogger } from "@utils/logger.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
 import { addLeaveRequest } from "@models/leaveRequestModel.js";
 import { DatabaseError } from "types/errorTypes.js";
-import { findEmployeeBalance } from "@models/leaveBalanceModel.js";
+import { getAllEmployeeLeaveBalance } from "@models/leaveBalanceModel.js";
 import { calculateWorkdays } from "@utils/dateCalculations.js";
 import { addLeaveRequestSchema } from "@schemas/leaveRequestSchema.js";
 
@@ -53,7 +53,7 @@ export const createLeaveRequest = async (
 
     // 4. Check Leave Balance (Crucial Integrity Check)
     // Note: This model function needs to return the available balance for the given type/year
-    const availableBalance = await findEmployeeBalance(employeeId);
+    const availableBalance = await getAllEmployeeLeaveBalance("ea");
 
     if (!availableBalance) {
       return errorResponse(
@@ -64,14 +64,14 @@ export const createLeaveRequest = async (
       );
     }
 
-    if (availableBalance.balance < totalWorkDays) {
-      return errorResponse(
-        res,
-        API_STATUS.CONFLICT,
-        `Sisa cuti Anda (${availableBalance.balance} hari) tidak mencukupi untuk ${totalWorkDays} hari yang diminta.`,
-        409
-      );
-    }
+    // if (availableBalance.balance < totalWorkDays) {
+    //   return errorResponse(
+    //     res,
+    //     API_STATUS.CONFLICT,
+    //     `Sisa cuti Anda (${availableBalance.balance} hari) tidak mencukupi untuk ${totalWorkDays} hari yang diminta.`,
+    //     409
+    //   );
+    // }
 
     // 5. Submit Request (Model)
     const newRequest = await addLeaveRequest({

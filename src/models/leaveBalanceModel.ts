@@ -1,57 +1,237 @@
 import { Knex } from "knex";
 import { db } from "@core/config/knex.js";
 import {
-  BulkGrantData,
-  EmployeeBalanceReport,
+  CreateBulkLeaveBalance,
+  CreateLeaveBalance,
+  GetAllLeaveBalance,
+  GetLeaveBalanceById,
   LeaveBalance,
-  LeaveBalanceReport,
-  LeaveBalanceUser,
-  SpecificUpdateData,
+  UpdateLeaveBalance,
 } from "types/leaveBalanceTypes.js";
-import { LeaveRequest } from "types/leaveRequestTypes.js";
+import {
+  EMPLOYEE_TABLE,
+  LEAVE_BALANCE_TABLE,
+  LEAVE_TYPE_TABLE,
+} from "@constants/database.js";
 
-const LEAVE_BALANCE_TABLE = "leave_balances";
-const EMPLOYEE_TABLE = "master_employees";
-const LEAVE_TYPE_TABLE = "master_leave_types";
-const POSITION_TABLE = "master_positions";
-const DEPARTMENT_TABLE = "master_departments";
+/**
+ * Function for generating leave balance code
+ */
+async function generateLeaveBalanceCode() {
+  const PREFIX = "JTC";
+  const PAD_LENGTH = 7;
+
+  const lastRow = await db(LEAVE_BALANCE_TABLE)
+    .select("balance_code")
+    .orderBy("id", "desc")
+    .first();
+
+  if (!lastRow) {
+    return PREFIX + String(1).padStart(PAD_LENGTH, "0");
+  }
+
+  const lastCode = lastRow.balance_code;
+  const lastNumber = parseInt(lastCode.replace(PREFIX, ""), 10);
+  const newNumber = lastNumber + 1;
+  return PREFIX + String(newNumber).padStart(PAD_LENGTH, "0");
+}
+
+/**
+ * Function for get the start of code number
+ */
+async function getNextStartingCodeNumber(): Promise<number> {
+  const PREFIX = "JTC";
+  const lastRow = await db(LEAVE_BALANCE_TABLE)
+    .select("balance_code")
+    .orderBy("id", "desc")
+    .first();
+
+  if (!lastRow) {
+    return 1;
+  }
+
+  const lastCode = lastRow.balance_code;
+  return parseInt(lastCode.replace(PREFIX, ""), 10) + 1;
+}
+
+/**
+ * Get all leave balance.
+ */
+export const getAllLeaveBalances = async (
+  year?: number,
+  typeCode?: string
+): Promise<GetAllLeaveBalance[]> => {
+  let query = db(LEAVE_BALANCE_TABLE)
+    .select(
+      `${LEAVE_BALANCE_TABLE}.id`,
+      `${LEAVE_BALANCE_TABLE}.balance_code`,
+      `${LEAVE_BALANCE_TABLE}.balance`,
+      `${LEAVE_BALANCE_TABLE}.year`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.full_name as employee_name`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
+    )
+    .leftJoin(
+      `${LEAVE_TYPE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.type_code`
+    )
+    .leftJoin(
+      `${EMPLOYEE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.employee_code`
+    );
+
+  if (year) {
+    query = query.where(`${LEAVE_BALANCE_TABLE}.year`, year);
+  }
+
+  if (typeCode) {
+    query = query.where(`${LEAVE_BALANCE_TABLE}.type_code`, typeCode);
+  }
+
+  return query;
+};
+
+/**
+ * Get all leave balance belongs to employee.
+ */
+export const getAllEmployeeLeaveBalance = async (
+  employeeCode: string
+): Promise<GetAllLeaveBalance[]> =>
+  await db(LEAVE_BALANCE_TABLE)
+    .select(
+      `${LEAVE_BALANCE_TABLE}.id`,
+      `${LEAVE_BALANCE_TABLE}.balance_code`,
+      `${LEAVE_BALANCE_TABLE}.balance`,
+      `${LEAVE_BALANCE_TABLE}.year`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.full_name as employee_name`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
+    )
+    .leftJoin(
+      `${LEAVE_TYPE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.type_code`
+    )
+    .leftJoin(
+      `${EMPLOYEE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.employee_code`
+    )
+    .where({ "leave_balances.employee_code": employeeCode });
+
+/**
+ * Get leave balance by ID.
+ */
+export const getLeaveBalanceById = async (
+  id: number
+): Promise<GetLeaveBalanceById | null> =>
+  await db(LEAVE_BALANCE_TABLE)
+    .select(
+      `${LEAVE_BALANCE_TABLE}.*`,
+      `${EMPLOYEE_TABLE}.full_name as employee_name`,
+      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
+    )
+    .leftJoin(
+      `${LEAVE_TYPE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.type_code`
+    )
+    .leftJoin(
+      `${EMPLOYEE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.employee_code`
+    )
+    .where({ "leave_balances.id": id })
+    .first();
+
+/**
+ * Get leave balance by Leave Balance Code.
+ */
+export const getLeaveBalanceByCode = async (
+  code: string
+): Promise<GetLeaveBalanceById | null> =>
+  await db(LEAVE_BALANCE_TABLE)
+    .select(
+      `${LEAVE_BALANCE_TABLE}.*`,
+      `${EMPLOYEE_TABLE}.full_name as employee_name`,
+      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
+    )
+    .leftJoin(
+      `${LEAVE_TYPE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.type_code`,
+      `${LEAVE_TYPE_TABLE}.type_code`
+    )
+    .leftJoin(
+      `${EMPLOYEE_TABLE}`,
+      `${LEAVE_BALANCE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.employee_code`
+    )
+    .where({ "leave_balances.balance_code": code })
+    .first();
+
+/**
+ * Creates new leave balance.
+ */
+export const addLeaveBalances = async (
+  data: CreateLeaveBalance
+): Promise<LeaveBalance> => {
+  const balance_code = await generateLeaveBalanceCode();
+  const leaveBalanceToInsert = {
+    ...data,
+    balance_code,
+  };
+  const [id] = await db(LEAVE_BALANCE_TABLE).insert(leaveBalanceToInsert);
+  return db(LEAVE_BALANCE_TABLE).where({ id }).first();
+};
 
 /**
  * Creates or increments the leave balance for ALL active employees.
  */
-export const bulkGrantLeaveBalances = async (
-  data: BulkGrantData
+export const addBulkLeaveBalances = async (
+  data: CreateBulkLeaveBalance
 ): Promise<number> => {
-  // 1. Fetch all active employee IDs
-  const employees = await db(EMPLOYEE_TABLE).select("id");
+  const employees = await db(EMPLOYEE_TABLE)
+    .select("employee_code", "employment_status")
+    .where("employment_status", "aktif");
 
   if (employees.length === 0) {
     return 0;
   }
-
   let affectedCount = 0;
+  let nextCodeNumber = await getNextStartingCodeNumber();
 
-  // 2. Perform the upsert logic within a transaction
   await db.transaction(async (trx: Knex.Transaction) => {
     for (const employee of employees) {
-      const employeeId = employee.id;
+      const employeeCode = employee.employee_code;
 
-      // Attempt 1: UPDATE the existing record (if it exists)
+      // UPDATE the existing record (if it exists)
       const updated = await trx(LEAVE_BALANCE_TABLE)
         .where({
-          employee_id: employeeId,
-          leave_type_id: data.leave_type_id,
+          employee_code: employeeCode,
+          type_code: data.type_code,
           year: data.year,
         })
-        .increment("balance", data.amount); // Atomically add the amount
+        .increment("balance", data.balance);
 
       if (updated === 0) {
-        // Attempt 2: INSERT the new record (if no update occurred)
+        // Ensure the code number to always unique
+        const balance_code = "JTC" + String(nextCodeNumber).padStart(7, "0");
+        nextCodeNumber++;
+        console.log(
+          `balance_code: ${balance_code}. employee_code: ${employeeCode}. type_cde: ${data.type_code}. year: ${data.year}`
+        );
+
+        // INSERT the new record (if no update occurred)
         await trx(LEAVE_BALANCE_TABLE).insert({
-          employee_id: employeeId,
-          leave_type_id: data.leave_type_id,
+          balance_code,
+          employee_code: employeeCode,
+          type_code: data.type_code,
           year: data.year,
-          balance: data.amount,
+          balance: data.balance,
         });
       }
       affectedCount++;
@@ -62,200 +242,29 @@ export const bulkGrantLeaveBalances = async (
 };
 
 /**
- * Sets or overwrites the absolute leave balance for a single employee.
+ * edit an existing leave balance record.
  */
-export const setSpecificLeaveBalance = async (
-  data: SpecificUpdateData
+export const editLeaveBalances = async (
+  data: UpdateLeaveBalance
 ): Promise<LeaveBalance | null> => {
-  const { employee_id, leave_type_id, year, amount } = data;
+  const { id, ...updateData } = data;
 
-  // 1. Attempt to update the existing record
-  const updatedCount = await db(LEAVE_BALANCE_TABLE)
-    .where({ employee_id, leave_type_id, year })
-    .update({
-      balance: amount, // Overwrite the current balance
-      updated_at: db.fn.now(),
-    });
-
-  // 2. If no record was updated, try to INSERT it
-  if (updatedCount === 0) {
-    // We only insert if the update failed, checking if the employee actually exists
-    // (The FK constraint will fail if the employee/type doesn't exist)
-    await db(LEAVE_BALANCE_TABLE).insert({
-      employee_id,
-      leave_type_id,
-      year,
-      balance: amount,
-    });
-    // If successful, treat it as an update/set operation
-  }
-
-  // 3. Retrieve and return the updated/inserted record
-  return db(LEAVE_BALANCE_TABLE)
-    .where({ employee_id, leave_type_id, year })
-    .first() as Promise<LeaveBalance | null>;
+  await db(LEAVE_BALANCE_TABLE).where({ id }).update(updateData);
+  return db(LEAVE_BALANCE_TABLE).where({ id }).first();
 };
+
+/**
+ * Remove existing leave balance
+ */
+export const removeLeaveBalances = async (id: number): Promise<number> =>
+  await db(LEAVE_BALANCE_TABLE).where({ id }).delete();
 
 /**
  * Deletes all leave balance records matching a specific type and year.
- * @returns The number of records deleted.
  */
 export async function removeBulkLeaveBalances(
-  leaveTypeId: number,
+  type_code: string,
   year: number
 ): Promise<number> {
-  return db(LEAVE_BALANCE_TABLE)
-    .where({
-      leave_type_id: leaveTypeId,
-      year: year,
-    })
-    .del();
+  return db(LEAVE_BALANCE_TABLE).where({ type_code, year }).del();
 }
-
-/**
- * Retrieves all leave balances for a single employee for the current year,
- */
-export const getEmployeeLeaveBalances = async (
-  employeeId: number
-): Promise<EmployeeBalanceReport[]> => {
-  const currentYear = new Date().getFullYear();
-
-  const balances = await db(LEAVE_BALANCE_TABLE)
-    .select(
-      `${LEAVE_BALANCE_TABLE}.*`,
-      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
-    )
-    .where({
-      [`${LEAVE_BALANCE_TABLE}.employee_id`]: employeeId,
-      [`${LEAVE_BALANCE_TABLE}.year`]: currentYear,
-    })
-    .leftJoin(
-      LEAVE_TYPE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.id`
-    );
-
-  return balances as EmployeeBalanceReport[];
-};
-
-/**
- * Retrieves a comprehensive report of all leave balances across all employees,
- */
-export const getAllLeaveBalanceReport = async (): Promise<
-  LeaveBalanceReport[]
-> => {
-  const reportData = await db(LEAVE_BALANCE_TABLE)
-    .select(
-      // 1. Leave Balance Data
-      `${LEAVE_BALANCE_TABLE}.id`,
-      `${LEAVE_BALANCE_TABLE}.balance`,
-      `${LEAVE_BALANCE_TABLE}.year`,
-
-      // 2. Employee Data
-      `${EMPLOYEE_TABLE}.id as employee_id`,
-      db.raw("CONCAT(??, ' ', ??) as employee_full_name", [
-        `${EMPLOYEE_TABLE}.first_name`,
-        `${EMPLOYEE_TABLE}.last_name`,
-      ]),
-
-      // 3. Position Data
-      `${POSITION_TABLE}.name as position_name`,
-
-      // 4. Department Data
-      `${DEPARTMENT_TABLE}.name as department_name`,
-
-      // 5. Leave Type Data
-      `${LEAVE_TYPE_TABLE}.id as leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.name as leave_type_name`
-    )
-    // JOIN 1: Employee Profile
-    .leftJoin(
-      EMPLOYEE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.employee_id`,
-      `${EMPLOYEE_TABLE}.id`
-    )
-
-    // JOIN 2: Position
-    .leftJoin(
-      POSITION_TABLE,
-      `${EMPLOYEE_TABLE}.position_id`,
-      `${POSITION_TABLE}.id`
-    )
-
-    // JOIN 3: Department
-    .leftJoin(
-      DEPARTMENT_TABLE,
-      `${POSITION_TABLE}.department_id`,
-      `${DEPARTMENT_TABLE}.id`
-    )
-
-    // JOIN 4: Leave Type
-    .leftJoin(
-      LEAVE_TYPE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.leave_type_id`,
-      `${LEAVE_TYPE_TABLE}.id`
-    )
-
-    // Order by name for readability
-    .orderBy("employee_full_name", "asc");
-
-  return reportData;
-};
-
-/**
- * Retrieves a single leave balance record for a specific employee and leave type.
- */
-export const findEmployeeBalance = async (
-  employeeId: number
-): Promise<LeaveBalanceUser> => {
-  return await db(LEAVE_BALANCE_TABLE)
-    .join(
-      LEAVE_TYPE_TABLE,
-      `${LEAVE_BALANCE_TABLE}.leave_type_id`,
-      "=",
-      `${LEAVE_TYPE_TABLE}.id`
-    )
-    .where({
-      employee_id: employeeId,
-    })
-    .select([
-      `${LEAVE_BALANCE_TABLE}.id`,
-      `${LEAVE_BALANCE_TABLE}.balance`,
-      `${LEAVE_BALANCE_TABLE}.year`,
-      `${LEAVE_TYPE_TABLE}.name AS leave_type_name`,
-      `${LEAVE_TYPE_TABLE}.description AS leave_type_description`,
-    ]);
-};
-
-/**
- * Deduct leave balance record
- */
-export const deductLeaveBalance = async (
-  leaveRequest: LeaveRequest
-): Promise<LeaveBalance | null> => {
-  const currentYear = new Date().getFullYear();
-  const { employee_id, leave_type_id, total_days } = leaveRequest;
-
-  await db(LEAVE_BALANCE_TABLE)
-    .where({
-      employee_id,
-      leave_type_id,
-      year: currentYear,
-    })
-    .decrement("balance", total_days);
-
-  return db(LEAVE_BALANCE_TABLE)
-    .where({ employee_id, leave_type_id, year: currentYear })
-    .first();
-};
-
-/**
- * Calculate the grand total of all leave balances.
- */
-export const calculateTotalLeaveBalance = async (): Promise<number> => {
-  const [result] = await db(LEAVE_BALANCE_TABLE).sum({
-    total_balance: "balance",
-  });
-
-  return Number(result.total_balance || 0);
-};

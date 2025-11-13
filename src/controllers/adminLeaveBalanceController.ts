@@ -4,26 +4,106 @@ import { appLogger } from "@utils/logger.js";
 import { errorResponse, successResponse } from "@utils/response.js";
 import { DatabaseError } from "types/errorTypes.js";
 import {
-  bulkGrantLeaveBalances,
-  getAllLeaveBalanceReport,
+  addBulkLeaveBalances,
+  addLeaveBalances,
+  editLeaveBalances,
+  getAllLeaveBalances,
+  getLeaveBalanceById,
   removeBulkLeaveBalances,
-  setSpecificLeaveBalance,
+  removeLeaveBalances,
 } from "@models/leaveBalanceModel.js";
 import {
+  addBulkLeaveBalanceSchema,
   addLeaveBalanceSchema,
   updateLeaveBalanceSchema,
 } from "@schemas/leaveBalanceSchema.js";
 
 /**
- * [POST] /leave-balances/ - create or increments the leave balance for all employees
+ * [GET] /leave-balances - Fetch all leave balances
+ * Accepts optional query parameter: ?year=YYYY
  */
-export const bulkGrantLeaveBalancesController = async (
-  req: Request,
-  res: Response
-) => {
+export const fetchAllLeaveBalances = async (req: Request, res: Response) => {
   try {
-    // 1. Validation
+    // parsing year and type code
+    const yearParam = req.query.year as string | undefined;
+    const year = yearParam ? parseInt(yearParam, 10) : undefined;
+    const typeCode = req.query.type_code as string | undefined;
+
+    const leaveBalances = await getAllLeaveBalances(year, typeCode);
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      "Data Saldo Cuti berhasil di dapatkan",
+      leaveBalances,
+      200,
+      RESPONSE_DATA_KEYS.LEAVE_BALANCES
+    );
+  } catch (error) {
+    const dbError = error as unknown;
+    appLogger.error(`Error fetching leave balances:${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [GET] /leave-balances/:id - Fetch Leave Balance by id
+ */
+export const fetchLeaveBalanceById = async (req: Request, res: Response) => {
+  try {
+    // Validate and cast the ID params
+    const id: number = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return errorResponse(
+        res,
+        API_STATUS.BAD_REQUEST,
+        "ID Saldo Cuti tidak valid.",
+        400
+      );
+    }
+
+    const leaveBalances = await getLeaveBalanceById(id);
+
+    if (!leaveBalances) {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Data Saldo Cuti tidak ditemukan",
+        404
+      );
+    }
+
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      "Data Saldo Cuti berhasil didapatkan",
+      leaveBalances,
+      200,
+      RESPONSE_DATA_KEYS.LEAVE_BALANCES
+    );
+  } catch (error) {
+    const dbError = error as unknown;
+    appLogger.error(`Error fetching leave balances:${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [POST] /leave-balances - Create a new Leave Balance
+ */
+export const createLeaveBalances = async (req: Request, res: Response) => {
+  try {
     const validation = addLeaveBalanceSchema.safeParse(req.body);
+
     if (!validation.success) {
       return errorResponse(
         res,
@@ -37,14 +117,111 @@ export const bulkGrantLeaveBalancesController = async (
       );
     }
 
-    const { leave_type_id, amount, year } = validation.data;
+    const leaveBalanceData = validation.data;
+    const leaveBalances = await addLeaveBalances(leaveBalanceData);
 
-    // 2. Execute Bulk Grant (Upsert logic in model)
-    const affectedCount = await bulkGrantLeaveBalances({
-      leave_type_id,
-      amount,
-      year,
-    });
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      "Data Saldo Cuti berhasil dibuat",
+      leaveBalances,
+      201,
+      RESPONSE_DATA_KEYS.LEAVE_BALANCES
+    );
+  } catch (error) {
+    const dbError = error as DatabaseError;
+
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+      const validationErrors = [];
+
+      // --- Duplicate Leave Balance CODE ---
+      if (
+        errorMessage &&
+        (errorMessage.includes("balance_code") ||
+          errorMessage.includes("uni_balance_code"))
+      ) {
+        validationErrors.push({
+          field: "balance_code",
+          message: "Kode Saldo Cuti yang dimasukkan sudah ada.",
+        });
+      }
+
+      // --- Duplicate Employee + Type + Year combination ---
+      if (
+        errorMessage &&
+        errorMessage.includes(
+          "leave_balances_employee_id_leave_type_id_year_unique"
+        )
+      ) {
+        validationErrors.push({
+          field: "employee_code",
+          message:
+            "Kombinasi Karyawan, Jenis Cuti, dan Tahun sudah memiliki saldo cuti.",
+        });
+      }
+
+      // --- Send Duplicate Entry Response if any unique field failed ---
+      if (validationErrors.length > 0) {
+        appLogger.warn(
+          "Employee creation failed: Duplicate entry detected for unique field(s)."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          validationErrors
+        );
+      }
+    }
+
+    //  Check if the employee code or type code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn(
+        "Leave Balance operation failed: Foreign key (employee_code or type_code) does not exist."
+      );
+
+      return errorResponse(
+        res,
+        API_STATUS.BAD_REQUEST,
+        "Validasi gagal: Kode Karyawan atau Kode Jenis Cuti tidak ditemukan.", // <-- GENERIC MESSAGE
+        400,
+        []
+      );
+    }
+
+    appLogger.error(`Error creating employees:${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [POST] /leave-balances/bulk - create or increments the leave balance for all employees
+ */
+export const createBulkLeaveBalances = async (req: Request, res: Response) => {
+  try {
+    const validation = addBulkLeaveBalanceSchema.safeParse(req.body);
+    if (!validation.success) {
+      return errorResponse(
+        res,
+        API_STATUS.BAD_REQUEST,
+        "Validasi gagal",
+        400,
+        validation.error.errors.map((err) => ({
+          field: err.path[0],
+          message: err.message,
+        }))
+      );
+    }
+
+    const leaveBalanceData = validation.data;
+    const affectedCount = await addBulkLeaveBalances(leaveBalanceData);
 
     if (affectedCount === 0) {
       return errorResponse(
@@ -55,31 +232,60 @@ export const bulkGrantLeaveBalancesController = async (
       );
     }
 
-    // 3. Success Response
     return successResponse(
       res,
       API_STATUS.SUCCESS,
       `Berhasil memperbarui atau menambahkan saldo cuti untuk ${affectedCount} pegawai.`,
-      { affected_count: affectedCount }, // Return the count as clear context
+      { affected_count: affectedCount },
       201,
       RESPONSE_DATA_KEYS.LEAVE_BALANCES
     );
   } catch (error) {
     const dbError = error as DatabaseError;
 
-    // CRITICAL: Handle Foreign Key Constraint (Invalid leave_type_id or non-existent employee)
-    if (
-      dbError.code === "ER_NO_REFERENCED_ROW" ||
-      dbError.errno === 1452 ||
-      (dbError.message &&
-        dbError.message.includes("a foreign key constraint fails"))
-    ) {
-      appLogger.warn("Bulk grant failed due to invalid foreign key.");
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+      const validationErrors = [];
+
+      // --- Duplicate Leave Balance CODE ---
+      if (
+        errorMessage &&
+        (errorMessage.includes("balance_code") ||
+          errorMessage.includes("uni_balance_code"))
+      ) {
+        validationErrors.push({
+          field: "balance_code",
+          message: "Kode Saldo Cuti yang dimasukkan sudah ada.",
+        });
+      }
+
+      // --- Send Duplicate Entry Response if any unique field failed ---
+      if (validationErrors.length > 0) {
+        appLogger.warn(
+          "Employee creation failed: Duplicate entry detected for unique field(s)."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          validationErrors
+        );
+      }
+    }
+
+    //  Check if the employee code or type code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn(
+        "Leave Balance operation failed: Foreign key (employee_code or type_code) does not exist."
+      );
+
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID Tipe Cuti tidak valid. Saldo tidak dapat diberikan.",
-        400
+        "Validasi gagal: Kode Karyawan atau Kode Jenis Cuti tidak ditemukan.",
+        400,
+        []
       );
     }
 
@@ -94,20 +300,17 @@ export const bulkGrantLeaveBalancesController = async (
 };
 
 /**
- * [PUT] /leave-balances/:employeeId - set or overwrite leave balance for single employee
+ * [PUT] /leave-balances/:id - Edit a Leave Balance
  */
-export const setSpecificLeaveBalanceController = async (
-  req: Request,
-  res: Response
-) => {
+export const updateLeaveBalances = async (req: Request, res: Response) => {
   try {
-    // 1. Validate ID Parameter
-    const employeeId: number = parseInt(req.params.employeeId, 10);
-    if (isNaN(employeeId)) {
+    // Validate and cast the ID params
+    const id: number = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID pegawai tidak valid.",
+        "ID Saldo Cuti tidak valid.",
         400
       );
     }
@@ -126,54 +329,77 @@ export const setSpecificLeaveBalanceController = async (
         }))
       );
     }
-    const { leave_type_id, amount, year } = validation.data;
 
-    // 3. Execute Set Balance (Upsert logic in model)
-    const updatedBalance = await setSpecificLeaveBalance({
-      employee_id: employeeId,
-      leave_type_id,
-      amount,
-      year,
-    });
+    const leaveBalanceData = validation.data;
+    const leaveBalances = await editLeaveBalances({ id, ...leaveBalanceData });
 
-    if (!updatedBalance) {
-      // This generally means the employeeId/leave_type_id combination failed the FK check
+    if (!leaveBalances) {
       return errorResponse(
         res,
         API_STATUS.NOT_FOUND,
-        "Pegawai atau Tipe Cuti tidak ditemukan.",
+        "Data Saldo Cuti tidak ditemukan",
         404
       );
     }
 
-    // 4. Success Response
     return successResponse(
       res,
       API_STATUS.SUCCESS,
-      "Saldo cuti pegawai berhasil diperbarui.",
-      updatedBalance,
+      "Data Saldo cuti berhasil diperbarui.",
+      leaveBalances,
       200,
       RESPONSE_DATA_KEYS.LEAVE_BALANCES
     );
   } catch (error) {
-    // Handle unique constraint failure or other DB errors
     const dbError = error as DatabaseError;
 
-    // Handle FK errors (e.g., non-existent employee_id or leave_type_id)
-    if (
-      dbError.code === "ER_NO_REFERENCED_ROW" ||
-      dbError.errno === 1452 ||
-      dbError.message.includes("foreign key")
-    ) {
+    if (dbError.code === "ER_DUP_ENTRY" || dbError.errno === 1062) {
+      const errorMessage = dbError.sqlMessage || dbError.message;
+      const validationErrors = [];
+
+      // --- Duplicate Leave Balance CODE ---
+      if (
+        errorMessage &&
+        (errorMessage.includes("balance_code") ||
+          errorMessage.includes("uni_balance_code"))
+      ) {
+        validationErrors.push({
+          field: "balance_code",
+          message: "Kode Saldo Cuti yang dimasukkan sudah ada.",
+        });
+      }
+
+      // --- Send Duplicate Entry Response if any unique field failed ---
+      if (validationErrors.length > 0) {
+        appLogger.warn(
+          "Employee creation failed: Duplicate entry detected for unique field(s)."
+        );
+        return errorResponse(
+          res,
+          API_STATUS.BAD_REQUEST,
+          "Validasi gagal",
+          400,
+          validationErrors
+        );
+      }
+    }
+
+    //  Check if the employee code or type code exist or not
+    if (dbError.code === "ER_NO_REFERENCED_ROW_2" || dbError.errno === 1452) {
+      appLogger.warn(
+        "Leave Balance operation failed: Foreign key (employee_code or type_code) does not exist."
+      );
+
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "ID Pegawai atau Tipe Cuti tidak valid.",
-        400
+        "Validasi gagal: Kode Karyawan atau Kode Jenis Cuti tidak ditemukan.",
+        400,
+        []
       );
     }
 
-    appLogger.error(`Error setting specific leave balance: ${error}`);
+    appLogger.error(`Error during editing leave balances: ${error}`);
     return errorResponse(
       res,
       API_STATUS.FAILED,
@@ -182,19 +408,65 @@ export const setSpecificLeaveBalanceController = async (
     );
   }
 };
-/**
- * [DELETE] /leave-balances/bulk - delete all leave balance records matching specific type and year
- */
-export const bulkDeleteLeaveBalancesController = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    // 1. Get parameters from QUERY STRING
-    const { leave_type_id, year } = req.query;
 
-    // 2. Validation (Query parameters are strings, so we validate their presence and parse them)
-    if (!leave_type_id || !year) {
+/**
+ * [DELETE] /leave-balances/:id - Delete a leave balance
+ */
+export const destroyLeaveBalances = async (req: Request, res: Response) => {
+  try {
+    // Validate and cast the ID params
+    const id: number = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return errorResponse(
+        res,
+        API_STATUS.BAD_REQUEST,
+        "ID Saldo Cuti tidak valid.",
+        400
+      );
+    }
+
+    const existing = await getLeaveBalanceById(id);
+
+    if (!existing) {
+      return errorResponse(
+        res,
+        API_STATUS.NOT_FOUND,
+        "Data Saldo Cuti tidak ditemukan",
+        404
+      );
+    }
+
+    await removeLeaveBalances(existing.id);
+
+    return successResponse(
+      res,
+      API_STATUS.SUCCESS,
+      "Data Saldo Cuti berhasil dihapus",
+      null,
+      200
+    );
+  } catch (error) {
+    const dbError = error as unknown;
+    appLogger.error(`Error fetching leave balances:${dbError}`);
+    return errorResponse(
+      res,
+      API_STATUS.FAILED,
+      "Terjadi kesalahan pada server",
+      500
+    );
+  }
+};
+
+/**
+ * [DELETE] /leave-balances/bulk - Delete all leave balance that have specific type code and year
+ */
+export const destroyBulkLeaveBalances = async (req: Request, res: Response) => {
+  try {
+    const yearParam = req.query.year as string | undefined;
+    const year = yearParam ? parseInt(yearParam, 10) : undefined;
+    const typeCode = req.query.type_code as string | undefined;
+
+    if (!typeCode || !year) {
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
@@ -203,27 +475,22 @@ export const bulkDeleteLeaveBalancesController = async (
       );
     }
 
-    const leaveTypeId = parseInt(leave_type_id as string, 10);
-    const targetYear = parseInt(year as string, 10);
-
-    if (isNaN(leaveTypeId) || isNaN(targetYear)) {
+    if (isNaN(year)) {
       return errorResponse(
         res,
         API_STATUS.BAD_REQUEST,
-        "Nilai ID Tipe Cuti dan Tahun harus berupa angka.",
+        "Tahun harus berupa angka.",
         400
       );
     }
 
-    // 3. Execute Bulk Delete
-    const deletedCount = await removeBulkLeaveBalances(leaveTypeId, targetYear);
+    const deletedCount = await removeBulkLeaveBalances(typeCode, year);
 
-    // 4. Response
     if (deletedCount === 0) {
       return errorResponse(
         res,
         API_STATUS.NOT_FOUND,
-        `Tidak ada saldo cuti ditemukan untuk Tipe Cuti ID ${leaveTypeId} pada tahun ${targetYear}.`,
+        `Tidak ada saldo cuti ditemukan untuk Kode Tipe Cuti ${typeCode} pada tahun ${year}.`,
         404
       );
     }
@@ -242,43 +509,6 @@ export const bulkDeleteLeaveBalancesController = async (
       res,
       API_STATUS.FAILED,
       "Terjadi kesalahan pada server.",
-      500
-    );
-  }
-};
-
-/**
- * [GET] /api/v1/admin/leave-balances - Fetch Comprehensive Leave Balance Report
- * Retrieves all leave balances, joined with employee, position, and department data.
- */
-export const fetchAllLeaveBalanceReport = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    // 1. Fetch the comprehensive joined data from the model
-    // We assume the model handles any necessary filtering (e.g., by current year)
-    const reportData = await getAllLeaveBalanceReport();
-
-    // 3. Success Response
-    return successResponse(
-      res,
-      API_STATUS.SUCCESS,
-      "Laporan saldo cuti berhasil didapatkan.",
-      reportData,
-      200,
-      RESPONSE_DATA_KEYS.LEAVE_BALANCES // Using a plural key for the list
-    );
-  } catch (error) {
-    const dbError = error as DatabaseError;
-
-    // Log the detailed database error
-    appLogger.error(`Error fetching full leave balance report: ${dbError}`);
-
-    return errorResponse(
-      res,
-      API_STATUS.FAILED,
-      "Terjadi kesalahan pada server saat membuat laporan saldo cuti.",
       500
     );
   }

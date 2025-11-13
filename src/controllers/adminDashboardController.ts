@@ -10,7 +10,6 @@ import {
 import { formatDate } from "@utils/formatDate.js";
 import { getAttendanceSessionsByDate } from "@models/attendanceSessionModel.js";
 import { totalMasterEmployees } from "@models/masterEmployeeModel.js";
-import { calculateTotalLeaveBalance } from "@models/leaveBalanceModel.js";
 
 /**
  * [GET] /metrics - Fetch admin data metrics
@@ -45,8 +44,9 @@ export const getMetrics = async (req: Request, res: Response) => {
       targetYear
     );
 
+    // TODO: Implement leave balance calculation
     // Calculate total leave balance for all type
-    const totalLeaveBalance = await calculateTotalLeaveBalance();
+    // const totalLeaveBalance = await calculateTotalLeaveBalance();
 
     // Send successful response
     return successResponse(
@@ -57,7 +57,7 @@ export const getMetrics = async (req: Request, res: Response) => {
         totalEmployee,
         totalLeaveRequest,
         totalAttendance,
-        totalLeaveBalance,
+        // totalLeaveBalance,
       },
       200,
       RESPONSE_DATA_KEYS.EMPLOYEES

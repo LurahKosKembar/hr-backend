@@ -2,18 +2,22 @@ import { Router } from "express";
 
 import { verifyToken } from "@middleware/jwt.js";
 import {
-  bulkDeleteLeaveBalancesController,
-  bulkGrantLeaveBalancesController,
-  fetchAllLeaveBalanceReport,
-  setSpecificLeaveBalanceController,
+  createBulkLeaveBalances,
+  createLeaveBalances,
+  destroyBulkLeaveBalances,
+  destroyLeaveBalances,
+  fetchAllLeaveBalances,
+  updateLeaveBalances,
 } from "@controllers/adminLeaveBalanceController.js";
 
 const router = Router();
 router.use(verifyToken);
 
-router.get("/", fetchAllLeaveBalanceReport);
-router.post("/", bulkGrantLeaveBalancesController);
-router.put("/:employeeId", setSpecificLeaveBalanceController);
-router.delete("/bulk", bulkDeleteLeaveBalancesController);
+router.get("/", fetchAllLeaveBalances);
+router.post("/", createLeaveBalances);
+router.post("/bulk", createBulkLeaveBalances);
+router.put("/:id", updateLeaveBalances);
+router.delete("/bulk", destroyBulkLeaveBalances);
+router.delete("/:id", destroyLeaveBalances);
 
 export default router;

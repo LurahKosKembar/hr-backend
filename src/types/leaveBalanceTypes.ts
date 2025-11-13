@@ -1,41 +1,57 @@
 export interface LeaveBalance {
   id: number;
-  employee_id: number;
-  leave_type_id: number;
+  balance_code: string;
+  employee_code: string;
+  type_code: string;
   balance: number;
   year: number;
   created_at?: Date;
   updated_at?: Date;
 }
 
-export interface LeaveBalanceUser {
+export interface GetAllLeaveBalance {
   id: number;
+  balance_code: string;
   balance: number;
   year: number;
-  created_at?: Date;
-  updated_at?: Date;
+  employee_code: string;
+  employee_name: string;
+  type_code: string;
   leave_type_name: string;
-  leave_type_description: string;
 }
 
-// Data required for the Bulk Grant operation (applies to all employees)
-export interface BulkGrantData {
-  leave_type_id: number;
-  amount: number; // Amount to add or set initially
+export interface GetLeaveBalanceById extends LeaveBalance {
+  employee_name: string;
+  leave_type_name: string;
+}
+
+export interface CreateLeaveBalance {
+  employee_code: string;
+  type_code: string;
+  balance: number;
   year: number;
+}
+
+export interface CreateBulkLeaveBalance {
+  type_code: string;
+  balance: number;
+  year: number;
+}
+
+export interface UpdateLeaveBalance {
+  id: number;
+  employee_code?: string;
+  type_code?: string;
+  balance?: number;
+  year?: number;
 }
 
 // Data required for the Specific Update operation (single employee)
 export interface SpecificUpdateData {
-  employee_id: number;
-  leave_type_id: number;
-  amount: number; // The absolute new balance
+  employee_code: string;
+  type_code: string;
+  amount: number;
   year: number;
-}
-
-// Data returned for the Employee GET request (includes leave type name)
-export interface EmployeeBalanceReport extends LeaveBalance {
-  leave_type_name: string;
 }
 
 // This represents one row in the comprehensive Admin report

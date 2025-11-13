@@ -4,27 +4,25 @@ import { errorResponse, successResponse } from "@utils/response.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
 import { appLogger } from "@utils/logger.js";
 import { DatabaseError } from "types/errorTypes.js";
-import { getMasterEmployeesById } from "@models/masterEmployeeModel.js";
-import { findEmployeeBalance } from "@models/leaveBalanceModel.js";
+import { getMasterEmployeesByCode } from "@models/masterEmployeeModel.js";
+import { getAllEmployeeLeaveBalance } from "@models/leaveBalanceModel.js";
 
 /**
- * [GET] /attendances/me - Get current user leave balances
+ * [GET] /leave-balances/me - Get current employee leave balances
  */
-export const fetchUserLeaveBalances = async (
+export const fetchEmployeeLeaveBalance = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  // FIX: Because the relation is changed from id to employee code
-  // We need to changed it too
-  const employeeId = 2;
+  const employeeCode = req.user!.employee_code;
 
   try {
     // check if the employee exist or not in database
-    const profile = await getMasterEmployeesById(employeeId);
+    const profile = await getMasterEmployeesByCode(employeeCode);
 
     if (!profile) {
       appLogger.error(
-        `FATAL: User ID ${req.user!.id} has no linked Employee profile.`
+        `FATAL: User code ${req.user!.user_code} has no linked Employee profile.`
       );
       return errorResponse(
         res,
@@ -35,7 +33,7 @@ export const fetchUserLeaveBalances = async (
     }
 
     // Get current user leave balance
-    const leaveBalances = await findEmployeeBalance(employeeId);
+    const leaveBalances = await getAllEmployeeLeaveBalance(employeeCode);
 
     return successResponse(
       res,

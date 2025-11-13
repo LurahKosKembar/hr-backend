@@ -5,7 +5,6 @@ import { AuthenticatedRequest } from "@middleware/jwt.js";
 import { getMasterEmployeesByCode } from "@models/masterEmployeeModel.js";
 import { appLogger } from "@utils/logger.js";
 import { calculateTotalAttendancesAndAbsences } from "@models/dashboardModel.js";
-import { findEmployeeBalance } from "@models/leaveBalanceModel.js";
 import { DatabaseError } from "types/errorTypes.js";
 
 /**
@@ -41,7 +40,8 @@ export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
       year
     );
 
-    const annualLeaveResult = await findEmployeeBalance(employeeId);
+    // TODO: Implement employee leave balance report
+    // const annualLeaveResult = await findEmployeeBalance(employeeId);
 
     return successResponse(
       res,
@@ -49,7 +49,7 @@ export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
       "Berhasil mendapatkan data dashboard karyawan",
       {
         ...attendanceMetrics,
-        annualLeaveBalance: annualLeaveResult || 0,
+        // annualLeaveBalance: annualLeaveResult || 0,
       },
       201,
       RESPONSE_DATA_KEYS.EMPLOYEES

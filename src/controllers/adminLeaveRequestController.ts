@@ -8,7 +8,7 @@ import {
   getLeaveRequestById,
 } from "@models/leaveRequestModel.js";
 import { updateLeaveStatusSchema } from "@schemas/leaveRequestSchema.js";
-import { deductLeaveBalance } from "@models/leaveBalanceModel.js";
+// import { deductLeaveBalance } from "@models/leaveBalanceModel.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
 
 /**
@@ -107,10 +107,11 @@ export const updateLeaveRequestStatus = async (
       );
     }
 
+    // TODO: update the logic deduction of leave balance
     // Deduct the leave balance if request approved
-    if (updatedRequest.status == "Approved") {
-      await deductLeaveBalance(updatedRequest);
-    }
+    // if (updatedRequest.status == "Approved") {
+    //   await deductLeaveBalance(updatedRequest);
+    // }
 
     // 5. Success Response
     return successResponse(

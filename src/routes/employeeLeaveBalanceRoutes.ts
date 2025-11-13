@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { verifyToken } from "@middleware/jwt.js";
-import { fetchUserLeaveBalances } from "@controllers/employeeLeaveBalanceController.js";
+import { fetchEmployeeLeaveBalance } from "@controllers/employeeLeaveBalanceController.js";
 
 const router = Router();
 router.use(verifyToken);
 
-router.get("/me", fetchUserLeaveBalances);
+router.get("/me", fetchEmployeeLeaveBalance);
 
 export default router;

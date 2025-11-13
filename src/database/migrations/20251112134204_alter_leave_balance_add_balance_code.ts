@@ -3,12 +3,20 @@ import type { Knex } from "knex";
 const LEAVE_TYPES_TABLE = "master_leave_types";
 const LEAVE_BALANCES_TABLE = "leave_balances";
 const EMPLOYEES_TABLE = "master_employees";
+const UNIQUE_KEY_NAME = "leave_balances_employee_id_leave_type_id_year_unique";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable(LEAVE_BALANCES_TABLE, (table) => {
     table.dropForeign(["employee_id"]);
-    table.dropColumn("employee_id");
     table.dropForeign(["leave_type_id"]);
+  });
+
+  await knex.schema.alterTable(LEAVE_BALANCES_TABLE, (table) => {
+    table.dropUnique([], UNIQUE_KEY_NAME);
+  });
+
+  await knex.schema.alterTable(LEAVE_BALANCES_TABLE, (table) => {
+    table.dropColumn("employee_id");
     table.dropColumn("leave_type_id");
   });
 
@@ -28,15 +36,22 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("restrict")
       .notNullable()
       .after("employee_code");
+
+    table.unique(["employee_code", "type_code", "year"], {
+      indexName: UNIQUE_KEY_NAME,
+    });
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  // Reverse order for rollback
   await knex.schema.alterTable(LEAVE_BALANCES_TABLE, (table) => {
     table.dropForeign(["employee_code"]);
-    table.dropColumn("employee_code");
     table.dropForeign(["type_code"]);
+    table.dropUnique([], UNIQUE_KEY_NAME);
+    table.dropColumn("employee_code");
     table.dropColumn("type_code");
+    table.dropColumn("balance_code");
   });
 
   await knex.schema.alterTable(LEAVE_BALANCES_TABLE, (table) => {
@@ -52,5 +67,9 @@ export async function down(knex: Knex): Promise<void> {
       .references("id")
       .inTable(LEAVE_TYPES_TABLE)
       .onDelete("restrict");
+
+    table.unique(["employee_id", "leave_type_id", "year"], {
+      indexName: UNIQUE_KEY_NAME,
+    });
   });
 }
