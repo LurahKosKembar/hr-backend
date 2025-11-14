@@ -58,7 +58,7 @@ export const getAllLeaveRequests = async (data: {
       `${LEAVE_REQUEST_TABLE}.total_days`,
       `${LEAVE_REQUEST_TABLE}.reason`,
       `${LEAVE_REQUEST_TABLE}.status`,
-      `${LEAVE_REQUEST_TABLE}.approved_by_code`,
+      `${LEAVE_REQUEST_TABLE}.approved_by_user_code`,
       `${LEAVE_REQUEST_TABLE}.approval_date`,
       `${EMPLOYEE_TABLE}.full_name as employee_name`,
       `${LEAVE_TYPE_TABLE}.name as type_name`,
@@ -76,7 +76,7 @@ export const getAllLeaveRequests = async (data: {
     )
     .leftJoin(
       `${EMPLOYEE_TABLE} as ${APPROVER_ALIAS}`,
-      `${LEAVE_REQUEST_TABLE}.approved_by_code`,
+      `${LEAVE_REQUEST_TABLE}.approved_by_user_code`,
       `${APPROVER_ALIAS}.employee_code`
     );
 
@@ -122,7 +122,7 @@ export const getLeaveRequestsById = async (
       )
       .leftJoin(
         `${EMPLOYEE_TABLE} as ${APPROVER_ALIAS}`,
-        `${LEAVE_REQUEST_TABLE}.approved_by_code`,
+        `${LEAVE_REQUEST_TABLE}.approved_by_user_code`,
         `${APPROVER_ALIAS}.employee_code`
       )
       .where({ "leave_requests.id": id })
@@ -157,7 +157,7 @@ export const getLeaveRequestByCodes = async (
       )
       .leftJoin(
         `${EMPLOYEE_TABLE} as ${APPROVER_ALIAS}`,
-        `${LEAVE_REQUEST_TABLE}.approved_by_code`,
+        `${LEAVE_REQUEST_TABLE}.approved_by_user_code`,
         `${APPROVER_ALIAS}.employee_code`
       )
       .where({ "leave_requests.request_code": code })
@@ -191,7 +191,7 @@ export const getEmployeeLeaveRequest = async (
     )
     .leftJoin(
       `${EMPLOYEE_TABLE} as ${APPROVER_ALIAS}`,
-      `${LEAVE_REQUEST_TABLE}.approved_by_code`,
+      `${LEAVE_REQUEST_TABLE}.approved_by_user_code`,
       `${APPROVER_ALIAS}.employee_code`
     )
     .where({ "leave_requests.employee_code": employeeCode })
@@ -237,12 +237,12 @@ export const editLeaveRequests = async (
 export const editLeaveRequestStatus = async (
   data: UpdateLeaveStatusData
 ): Promise<LeaveRequest | null> => {
-  const { id, new_status, approved_by_code } = data;
+  const { id, new_status, approved_by_user_code } = data;
 
   await db(LEAVE_REQUEST_TABLE).where({ id }).update({
     status: new_status,
     approval_date: db.fn.now(),
-    approved_by_code,
+    approved_by_user_code,
   });
   return db(LEAVE_REQUEST_TABLE).where({ id }).first();
 };

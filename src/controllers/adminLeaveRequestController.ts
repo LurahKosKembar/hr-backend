@@ -6,12 +6,10 @@ import {
   editLeaveRequestStatus,
   getAllLeaveRequests,
   getLeaveRequestsById,
+  removeLeaveRequest,
 } from "@models/leaveRequestModel.js";
 import { updateLeaveStatusSchema } from "@schemas/leaveRequestSchema.js";
-import {
-  deductLeaveBalance,
-  removeLeaveBalances,
-} from "@models/leaveBalanceModel.js";
+import { deductLeaveBalance } from "@models/leaveBalanceModel.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
 
 /**
@@ -156,7 +154,7 @@ export const updateLeaveRequestStatus = async (
     const updatedRequest = await editLeaveRequestStatus({
       id: existingRequest.id,
       new_status: newStatus,
-      approved_by_code: userCode,
+      approved_by_user_code: userCode,
     });
     if (!updatedRequest) {
       return errorResponse(
@@ -235,7 +233,7 @@ export const destroyLeaveRequest = async (req: Request, res: Response) => {
       );
     }
 
-    await removeLeaveBalances(existing.id);
+    await removeLeaveRequest(existing.id);
 
     return successResponse(
       res,

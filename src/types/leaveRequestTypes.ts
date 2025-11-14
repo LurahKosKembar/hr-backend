@@ -8,7 +8,7 @@ export interface LeaveRequest {
   total_days: number;
   reason: string;
   status: "Pending" | "Approved" | "Rejected";
-  approved_by_code: string | null;
+  approved_by_user_code: string | null;
   approval_date: Date | null;
   created_at?: Date;
   updated_at?: Date;
@@ -30,7 +30,7 @@ export interface GetAllLeaveRequest {
   total_days: number;
   reason: string;
   status: "Pending" | "Approved" | "Rejected";
-  approved_by_code: string | null;
+  approved_by_user_code: string | null;
   approval_date: Date | null;
   employee_name: string;
   type_name: string;
@@ -57,5 +57,5 @@ export interface UpdateLeaveRequest {
 export interface UpdateLeaveStatusData {
   id: number;
   new_status: "Approved" | "Rejected";
-  approved_by_code: string;
+  approved_by_user_code: string;
 }

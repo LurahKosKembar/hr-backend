@@ -240,9 +240,6 @@ export const addBulkLeaveBalances = async (
         // Ensure the code number to always unique
         const balance_code = "JTC" + String(nextCodeNumber).padStart(7, "0");
         nextCodeNumber++;
-        console.log(
-          `balance_code: ${balance_code}. employee_code: ${employeeCode}. type_cde: ${data.type_code}. year: ${data.year}`
-        );
 
         // INSERT the new record (if no update occurred)
         await trx(LEAVE_BALANCE_TABLE).insert({
