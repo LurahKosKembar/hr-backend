@@ -107,7 +107,7 @@ export const updateLeaveRequestStatus = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const employeeCode = req.user!.employee_code;
+  const userCode = req.user!.user_code;
   const requestId = parseInt(req.params.id, 10);
 
   try {
@@ -156,7 +156,7 @@ export const updateLeaveRequestStatus = async (
     const updatedRequest = await editLeaveRequestStatus({
       id: existingRequest.id,
       new_status: newStatus,
-      approved_by_code: employeeCode,
+      approved_by_code: userCode,
     });
     if (!updatedRequest) {
       return errorResponse(

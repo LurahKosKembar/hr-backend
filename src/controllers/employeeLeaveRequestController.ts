@@ -20,8 +20,17 @@ export const fetchEmployeeLeaveRequest = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
+  const employeeCode = req.user!.employee_code;
+
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
   try {
-    const employeeCode = req.user!.employee_code;
     const leaveRequest = await getAllLeaveRequests({ employeeCode });
 
     return successResponse(
@@ -51,7 +60,16 @@ export const createLeaveRequest = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const employee_code = req.user!.employee_code;
+  const employeeCode = req.user!.employee_code;
+
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
 
   try {
     const validation = addLeaveRequestSchema.safeParse(req.body);
@@ -69,7 +87,7 @@ export const createLeaveRequest = async (
     }
 
     // check if the employee exist or not in database
-    const profile = await getMasterEmployeesByCode(employee_code);
+    const profile = await getMasterEmployeesByCode(employeeCode);
     if (!profile) {
       appLogger.error(
         `FATAL: User Code ${req.user!.user_code} has no linked Employee profile.`
@@ -97,7 +115,7 @@ export const createLeaveRequest = async (
 
     // Check Leave Balance (Crucial Integrity Check)
     const availableBalance = await getLeaveBalanceByEmployeeAndType(
-      employee_code,
+      employeeCode,
       type_code
     );
     if (!availableBalance) {
@@ -119,7 +137,7 @@ export const createLeaveRequest = async (
     }
 
     const leaveRequestData = {
-      employee_code,
+      employee_code: employeeCode,
       type_code,
       start_date,
       total_days: totalWorkDays,
@@ -170,7 +188,7 @@ export const createLeaveRequest = async (
       }
 
       appLogger.error(
-        `Error submitting leave request for employee ${employee_code}:${error}`
+        `Error submitting leave request for employee ${employeeCode}:${error}`
       );
       return errorResponse(
         res,

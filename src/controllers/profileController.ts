@@ -18,6 +18,15 @@ export const fetchEmployeeProfile = async (
 ) => {
   const employeeCode = req.user!.employee_code;
 
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
+
   try {
     const profile = await getMasterEmployeesByCode(employeeCode);
 
@@ -63,6 +72,15 @@ export const updateEmployeeProfile = async (
   res: Response
 ) => {
   const employeeCode = req.user!.employee_code;
+
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
 
   try {
     const validation = updateProfileSchema.safeParse(req.body);

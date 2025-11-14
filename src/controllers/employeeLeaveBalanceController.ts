@@ -16,6 +16,15 @@ export const fetchEmployeeLeaveBalance = async (
 ) => {
   const employeeCode = req.user!.employee_code;
 
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
+
   try {
     // check if the employee exist or not in database
     const profile = await getMasterEmployeesByCode(employeeCode);
