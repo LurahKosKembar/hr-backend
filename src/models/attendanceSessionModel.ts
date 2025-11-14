@@ -86,10 +86,10 @@ export const getAttendanceSessionsByDate = async (
       `${ATTENDANCE_SESSION_TABLE}.close_time`,
       `${ATTENDANCE_SESSION_TABLE}.created_by`,
 
-      // User Fields
+      // User fields
       `${USER_TABLE}.role as created_by_role`,
 
-      // Employee Fields
+      // Employee fields
       `${EMPLOYEE_TABLE}.employee_code as created_by_employee_code`,
       `${EMPLOYEE_TABLE}.full_name as created_by_full_name`
     )
@@ -100,8 +100,8 @@ export const getAttendanceSessionsByDate = async (
     )
     .leftJoin(
       `${EMPLOYEE_TABLE}`,
-      `${USER_TABLE}.employee_code`,
-      `${EMPLOYEE_TABLE}.employee_code`
+      `${EMPLOYEE_TABLE}.user_code`,
+      `${USER_TABLE}.user_code`
     )
     .where(`${ATTENDANCE_SESSION_TABLE}.date`, date)
     .first();

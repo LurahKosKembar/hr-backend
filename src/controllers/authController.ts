@@ -7,6 +7,7 @@ import { loginSchema } from "@schemas/authSchema.js";
 import { findUserByEmail } from "@models/authModel.js";
 import { comparePassword } from "@utils/bcrypt.js";
 import { AuthenticatedRequest } from "@middleware/jwt.js";
+import { getMasterEmployeesByUserCode } from "@models/masterEmployeeModel.js";
 
 /**
  * [POST] /api/v1/auth/login - Login User (Employee or Admin)
@@ -51,12 +52,15 @@ export const loginUser = async (req: Request, res: Response) => {
       );
     }
 
+    // get employee code based on user code
+    const employee = await getMasterEmployeesByUserCode(user.user_code);
+
     // generate token phase
     const userResponse = {
       id: user.id,
       email: user.email,
       user_code: user.user_code,
-      employee_code: user.employee_code,
+      employee_code: employee?.employee_code || null,
       role: user.role,
     };
     const token = await generateToken(userResponse);

@@ -16,39 +16,29 @@ import { totalMasterEmployees } from "@models/masterEmployeeModel.js";
  */
 export const getMetrics = async (req: Request, res: Response) => {
   try {
-    // Handle query params (optional)
+    // get the date, month, year from the query
     const { date, month, year } = req.query;
-
-    // Fallback to today's date using formatDate()
     const targetDate =
       typeof date === "string" && date.trim() !== "" ? date : formatDate();
 
-    // Fetch attendance session for the target date
-    const attendanceSession = await getAttendanceSessionsByDate(targetDate);
-
-    // Calculate total attendance if session exists
-    const totalAttendance = attendanceSession
-      ? await calculateTotalAttendances(targetDate, attendanceSession)
-      : 0;
-
-    // Get total employees (now returns a number directly)
-    const totalEmployee = await totalMasterEmployees();
-
-    // Calculate total leave requests (monthly)
+    // parse the data to calculate the leave request of the month and year
     const now = new Date();
     const targetMonth = month ? parseInt(month as string) : now.getMonth() + 1;
     const targetYear = year ? parseInt(year as string) : now.getFullYear();
-
     const totalLeaveRequest = await calculateTotalLeaveRequest(
       targetMonth,
       targetYear
     );
 
-    // TODO: Implement leave balance calculation
-    // Calculate total leave balance for all type
-    // const totalLeaveBalance = await calculateTotalLeaveBalance();
+    // calculate the attendance for specific date
+    const attendanceSession = await getAttendanceSessionsByDate(targetDate);
+    const totalAttendance = attendanceSession
+      ? await calculateTotalAttendances(targetDate, attendanceSession)
+      : 0;
 
-    // Send successful response
+    // get the total employee in the system
+    const totalEmployee = await totalMasterEmployees();
+
     return successResponse(
       res,
       API_STATUS.SUCCESS,

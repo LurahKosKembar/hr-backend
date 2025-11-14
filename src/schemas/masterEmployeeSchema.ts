@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const addMasterEmployeesSchema = z.object({
   // required fields
+  user_code: z.string().length(10, "Kode user harus tepat 10 karakter"),
   position_code: z.string().length(10, "Kode posisi harus tepat 10 karakter"),
   full_name: z
     .string({ required_error: "Nama panjang wajib diisi" })
@@ -84,6 +85,10 @@ export const addMasterEmployeesSchema = z.object({
 
 export const updateMasterEmployeesSchema = z
   .object({
+    user_code: z
+      .string()
+      .length(10, "Kode user harus tepat 10 karakter")
+      .optional(),
     position_code: z
       .string()
       .length(10, "Kode posisi harus tepat 10 karakter")

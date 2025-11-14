@@ -44,41 +44,48 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
-    table.dropForeign(["employee_code"]);
-    table.dropForeign(["type_code"]);
-    table.dropForeign(["approved_by_code"]);
-  });
+  try {
+    await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
+      table.dropForeign(["employee_code"]);
+      table.dropForeign(["type_code"]);
+      table.dropForeign(["approved_by_code"]);
+    });
 
-  await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
-    table.dropColumn("request_code");
-    table.dropColumn("employee_code");
-    table.dropColumn("type_code");
-    table.dropColumn("approved_by_code");
-  });
+    await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
+      table.dropColumn("request_code");
+      table.dropColumn("employee_code");
+      table.dropColumn("type_code");
+      table.dropColumn("approved_by_code");
+    });
 
-  await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
-    table.integer("employee_id").unsigned().notNullable();
-    table.integer("leave_type_id").unsigned().notNullable();
-    table.integer("approved_by_id").unsigned().nullable();
-  });
-  await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
-    table
-      .foreign("employee_id")
-      .references("id")
-      .inTable(EMPLOYEES_TABLE)
-      .onDelete("restrict");
+    await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
+      table.integer("employee_id").unsigned().notNullable();
+      table.integer("leave_type_id").unsigned().notNullable();
+      table.integer("approved_by_id").unsigned().nullable();
+    });
+    await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
+      table
+        .foreign("employee_id")
+        .references("id")
+        .inTable(EMPLOYEES_TABLE)
+        .onDelete("restrict");
 
-    table
-      .foreign("leave_type_id")
-      .references("id")
-      .inTable(LEAVE_TYPES_TABLE)
-      .onDelete("restrict");
+      table
+        .foreign("leave_type_id")
+        .references("id")
+        .inTable(LEAVE_TYPES_TABLE)
+        .onDelete("restrict");
 
-    table
-      .foreign("approved_by_id")
-      .references("id")
-      .inTable(EMPLOYEES_TABLE)
-      .onDelete("restrict");
-  });
+      table
+        .foreign("approved_by_id")
+        .references("id")
+        .inTable(EMPLOYEES_TABLE)
+        .onDelete("restrict");
+    });
+  } catch (error) {
+    console.error(`Error during 'down' migration (20251110061946): ${error}`);
+    throw error;
+  } finally {
+    await knex.raw("SET FOREIGN_KEY_CHECKS = 1");
+  }
 }

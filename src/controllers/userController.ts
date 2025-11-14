@@ -107,15 +107,9 @@ export const createUsers = async (req: Request, res: Response) => {
       );
     }
 
-    const { email, password, role, employee_code } = validation.data;
+    const { role, password, email } = validation.data;
     const hashedPassword = await hashPassword(password);
-
-    const users = await addUsers({
-      email,
-      password: hashedPassword,
-      role,
-      employee_code,
-    });
+    const users = await addUsers({ password: hashedPassword, email, role });
 
     return successResponse(
       res,
@@ -153,19 +147,6 @@ export const createUsers = async (req: Request, res: Response) => {
           field: "email",
           message:
             "Email yang dimasukkan sudah terdaftar. Silakan gunakan email lain.",
-        });
-      }
-
-      // --- Duplicate user employee_code ---
-      if (
-        errorMessage &&
-        (errorMessage.includes("employee_code") ||
-          errorMessage.includes("uni_employee_code"))
-      ) {
-        validationErrors.push({
-          field: "employee_id",
-          message:
-            "Pegawai ini sudah memiliki akun login. Tidak dapat membuat akun ganda.",
         });
       }
 

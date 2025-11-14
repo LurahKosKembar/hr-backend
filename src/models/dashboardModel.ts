@@ -10,7 +10,7 @@ import { AttendanceSession } from "types/attendanceSessionTypes.js";
  * Get information for total attendance and absences for one employee
  */
 export const calculateTotalAttendancesAndAbsences = async (
-  employeeId: number,
+  employeeCode: string,
   month: number,
   year: number
 ): Promise<{ totalAttendance: number; totalNotAttend: number }> => {
@@ -30,13 +30,13 @@ export const calculateTotalAttendancesAndAbsences = async (
   );
 
   const totalPresentResult = await db(ATTENDANCE_TABLE)
-    .where("employee_id", employeeId)
+    .where("employee_code", employeeCode)
     .whereIn("check_in_status", ["in-time", "late"])
     .whereExists(function () {
       this.select("*")
         .from(ATTENDANCE_SESSION_TABLE)
         .whereRaw(
-          `${ATTENDANCE_SESSION_TABLE}.id = ${ATTENDANCE_TABLE}.session_id`
+          `${ATTENDANCE_SESSION_TABLE}.session_code = ${ATTENDANCE_TABLE}.session_code`
         )
         .andWhere(`${ATTENDANCE_SESSION_TABLE}.status`, "closed")
         .andWhereBetween(`${ATTENDANCE_SESSION_TABLE}.date`, [
@@ -71,7 +71,7 @@ export const calculateTotalAttendances = async (
 ): Promise<number> => {
   const result = await db(ATTENDANCE_TABLE)
     .where({
-      session_id: attendanceSession.id,
+      session_code: attendanceSession.session_code,
     })
     .count("id as total")
     .first();

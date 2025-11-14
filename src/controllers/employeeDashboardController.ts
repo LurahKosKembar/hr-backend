@@ -13,12 +13,21 @@ import { DatabaseError } from "types/errorTypes.js";
 export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
   const employeeCode = req.user!.employee_code;
 
+  if (!employeeCode) {
+    return errorResponse(
+      res,
+      API_STATUS.UNAUTHORIZED,
+      "Akun ini tidak terhubung dengan data pegawai.",
+      401
+    );
+  }
+
   try {
     // check if the employee exist or not in database
     const profile = await getMasterEmployeesByCode(employeeCode);
     if (!profile) {
       appLogger.error(
-        `FATAL: User ID ${req.user!.id} has no linked Employee profile.`
+        `FATAL: User Code ${req.user!.user_code} has no linked Employee profile.`
       );
       return errorResponse(
         res,
@@ -32,10 +41,9 @@ export const getMetrics = async (req: AuthenticatedRequest, res: Response) => {
     const now = new Date();
     const month = parseInt(req.query.month as string) || now.getMonth() + 1;
     const year = parseInt(req.query.year as string) || now.getFullYear();
-    const employeeId = profile.id;
 
     const attendanceMetrics = await calculateTotalAttendancesAndAbsences(
-      employeeId,
+      employeeCode,
       month,
       year
     );

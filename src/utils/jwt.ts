@@ -9,7 +9,7 @@ config();
 export interface TokenPayload extends JWTPayload {
   id: number;
   user_code: string;
-  employee_code: string;
+  employee_code?: string | null;
   role: "admin" | "employee";
 }
 

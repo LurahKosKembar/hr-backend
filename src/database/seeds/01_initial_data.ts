@@ -278,10 +278,36 @@ export async function seed(knex: Knex): Promise<void> {
     },
   ]);
 
+  // 6. Seed the User
+  const password = process.env.DEFAULT_ADMIN_PASSWORD || "Password123!";
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await knex(TABLE_KEYS.USERS).insert([
+    {
+      user_code: "USR0000001",
+      email: "budi.pratama@company.com",
+      password: hashedPassword, // placeholder hash
+      role: "admin",
+    },
+    {
+      user_code: "USR0000002",
+      email: "siti.rahmawati@company.com",
+      password: hashedPassword, // placeholder hash
+      role: "employee",
+    },
+    {
+      user_code: "USR0000003",
+      email: "andi.setiawan@company.com",
+      password: hashedPassword, // placeholder hash
+      role: "employee",
+    },
+  ]);
+
   // 5. Seed the first Employee (who will be the Admin)
   await knex(TABLE_KEYS.EMPLOYEES).insert([
     {
       employee_code: "KWN0000001",
+      // user_code: "USR0000001",
       position_code: "POS0000001", // Software Engineer
       full_name: "Budi Pratama",
       ktp_number: "3578123409876543",
@@ -305,6 +331,7 @@ export async function seed(knex: Knex): Promise<void> {
 
     {
       employee_code: "KWN0000002",
+      user_code: "USR0000002",
       position_code: "POS0000006", // Recruitment Officer
       full_name: "Siti Rahmawati",
       ktp_number: "3578012345678912",
@@ -328,6 +355,7 @@ export async function seed(knex: Knex): Promise<void> {
 
     {
       employee_code: "KWN0000003",
+      user_code: "USR0000003",
       position_code: "POS0000014", // Accountant
       full_name: "Andi Setiawan",
       ktp_number: "3578456712345678",
@@ -347,34 +375,6 @@ export async function seed(knex: Knex): Promise<void> {
       bpjs_kesehatan: "129876543210",
       npwp: "12.987.654.3-210.000",
       bank_account: "BRI 3344556677",
-    },
-  ]);
-
-  // 5. Seed the User
-  const password = process.env.DEFAULT_ADMIN_PASSWORD || "Password123!";
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  await knex(TABLE_KEYS.USERS).insert([
-    {
-      user_code: "USR0000001",
-      email: "budi.pratama@company.com",
-      password: hashedPassword, // placeholder hash
-      employee_code: "KWN0000001",
-      role: "admin",
-    },
-    {
-      user_code: "USR0000002",
-      email: "siti.rahmawati@company.com",
-      password: hashedPassword, // placeholder hash
-      employee_code: "KWN0000002",
-      role: "employee",
-    },
-    {
-      user_code: "USR0000003",
-      email: "andi.setiawan@company.com",
-      password: hashedPassword, // placeholder hash
-      employee_code: "KWN0000003",
-      role: "employee",
     },
   ]);
 

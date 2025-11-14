@@ -1,4 +1,4 @@
-import { USER_TABLE } from "@constants/database.js";
+import { EMPLOYEE_TABLE, USER_TABLE } from "@constants/database.js";
 import { db } from "@core/config/knex.js";
 import {
   CreateUserData,
@@ -35,20 +35,16 @@ async function generateUserCode() {
 export const getAllUsers = async (): Promise<GetAllUser[]> =>
   await db(USER_TABLE)
     .select(
-      "users.id",
-      "users.user_code",
-      "users.email",
-      "users.role",
-      "users.employee_code",
-
-      // Employee fields
-      "master_employees.employee_code",
-      "master_employees.full_name as employee_name"
+      `${USER_TABLE}.id`,
+      `${USER_TABLE}.user_code`,
+      `${USER_TABLE}.email`,
+      `${USER_TABLE}.role`,
+      `${EMPLOYEE_TABLE}.full_name as employee_name`
     )
     .leftJoin(
-      "master_employees",
-      "users.employee_code",
-      "master_employees.employee_code"
+      `${EMPLOYEE_TABLE}`,
+      `${EMPLOYEE_TABLE}.user_code`,
+      `${USER_TABLE}.user_code`
     );
 
 /**
@@ -57,10 +53,7 @@ export const getAllUsers = async (): Promise<GetAllUser[]> =>
 export const getUsersById = async (
   id: number
 ): Promise<Omit<User, "password">> =>
-  await db(USER_TABLE)
-    .where({ id })
-    .select("id", "user_code", "email", "role", "employee_code")
-    .first();
+  await db(USER_TABLE).where({ id }).select("*").first();
 
 /**
  * Creates new user.
@@ -70,15 +63,13 @@ export const addUsers = async (
 ): Promise<Omit<User, "password">> => {
   const user_code = await generateUserCode();
   const userToInsert = {
-    ...data,
+    email: data.email,
+    password: data.password,
+    role: data.role,
     user_code,
   };
   const [id] = await db(USER_TABLE).insert(userToInsert);
-
-  return db(USER_TABLE)
-    .where({ id })
-    .select("id", "user_code", "email", "role", "employee_code")
-    .first();
+  return db(USER_TABLE).where({ id }).select("*").first();
 };
 
 /**
@@ -87,13 +78,15 @@ export const addUsers = async (
 export const editUsers = async (
   data: UpdateUserData
 ): Promise<Omit<User, "password"> | null> => {
-  const { id, ...updateData } = data;
+  const { id } = data;
+  const userToUpdate = {
+    email: data.email,
+    password: data.password,
+    role: data.role,
+  };
 
-  await db(USER_TABLE).where({ id }).update(updateData);
-  return db(USER_TABLE)
-    .where({ id })
-    .select("id", "user_code", "email", "role", "employee_code")
-    .first();
+  await db(USER_TABLE).where({ id }).update(userToUpdate);
+  return db(USER_TABLE).where({ id }).select("*").first();
 };
 
 /**

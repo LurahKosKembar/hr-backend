@@ -1,4 +1,9 @@
-import { EMPLOYEE_TABLE } from "@constants/database.js";
+import {
+  DEPARTMENT_TABLE,
+  DIVISION_TABLE,
+  EMPLOYEE_TABLE,
+  POSITION_TABLE,
+} from "@constants/database.js";
 import {
   CreateEmployee,
   GetAllEmployee,
@@ -37,39 +42,39 @@ async function generateEmployeeCode() {
 export const getAllMasterEmployees = async (): Promise<GetAllEmployee[]> =>
   await db(EMPLOYEE_TABLE)
     .select(
-      "master_employees.id",
-      "master_employees.employee_code",
-      "master_employees.full_name",
-      "master_employees.join_date",
-      "master_employees.position_code",
-      "master_employees.employment_status",
+      `${EMPLOYEE_TABLE}.id`,
+      `${EMPLOYEE_TABLE}.employee_code`,
+      `${EMPLOYEE_TABLE}.full_name`,
+      `${EMPLOYEE_TABLE}.join_date`,
+      `${EMPLOYEE_TABLE}.position_code`,
+      `${EMPLOYEE_TABLE}.employment_status`,
 
       // Position fields
-      "master_positions.position_code",
-      "master_positions.name as position_name",
+      `${POSITION_TABLE}.position_code`,
+      `${POSITION_TABLE}.name as position_name`,
 
       // Division fields
-      "master_divisions.division_code as division_code",
-      "master_divisions.name as division_name",
+      `${DIVISION_TABLE}.division_code as division_code`,
+      `${DIVISION_TABLE}.name as division_name`,
 
       // Department fields
-      "master_departments.department_code as department_code",
-      "master_departments.name as department_name"
+      `${DEPARTMENT_TABLE}.department_code as department_code`,
+      `${DEPARTMENT_TABLE}.name as department_name`
     )
     .leftJoin(
-      "master_positions",
-      "master_employees.position_code",
-      "master_positions.position_code"
+      `${POSITION_TABLE}`,
+      `${EMPLOYEE_TABLE}.position_code`,
+      `${POSITION_TABLE}.position_code`
     )
     .leftJoin(
-      "master_divisions",
-      "master_positions.division_code",
-      "master_divisions.division_code"
+      `${DIVISION_TABLE}`,
+      `${POSITION_TABLE}.division_code`,
+      `${DIVISION_TABLE}.division_code`
     )
     .leftJoin(
-      "master_departments",
-      "master_divisions.department_code",
-      "master_departments.department_code"
+      `${DEPARTMENT_TABLE}`,
+      `${DIVISION_TABLE}.department_code`,
+      `${DEPARTMENT_TABLE}.department_code`
     );
 
 /**
@@ -80,35 +85,34 @@ export const getMasterEmployeesById = async (
 ): Promise<GetEmployeeById | null> =>
   await db(EMPLOYEE_TABLE)
     .select(
-      // Employee fields
-      "master_employees.*",
+      `${EMPLOYEE_TABLE}.*`,
 
       // Position fields
-      "master_positions.position_code",
-      "master_positions.name as position_name",
+      `${POSITION_TABLE}.position_code`,
+      `${POSITION_TABLE}.name as position_name`,
 
       // Division fields
-      "master_divisions.division_code as division_code",
-      "master_divisions.name as division_name",
+      `${DIVISION_TABLE}.division_code as division_code`,
+      `${DIVISION_TABLE}.name as division_name`,
 
       // Department fields
-      "master_departments.department_code as department_code",
-      "master_departments.name as department_name"
+      `${DEPARTMENT_TABLE}.department_code as department_code`,
+      `${DEPARTMENT_TABLE}.name as department_name`
     )
     .leftJoin(
-      "master_positions",
-      "master_employees.position_code",
-      "master_positions.position_code"
+      `${POSITION_TABLE}`,
+      `${EMPLOYEE_TABLE}.position_code`,
+      `${POSITION_TABLE}.position_code`
     )
     .leftJoin(
-      "master_divisions",
-      "master_positions.division_code",
-      "master_divisions.division_code"
+      `${DIVISION_TABLE}`,
+      `${POSITION_TABLE}.division_code`,
+      `${DIVISION_TABLE}.division_code`
     )
     .leftJoin(
-      "master_departments",
-      "master_divisions.department_code",
-      "master_departments.department_code"
+      `${DEPARTMENT_TABLE}`,
+      `${DIVISION_TABLE}.department_code`,
+      `${DEPARTMENT_TABLE}.department_code`
     )
     .where({ "master_employees.id": id })
     .first();
@@ -121,37 +125,47 @@ export const getMasterEmployeesByCode = async (
 ): Promise<GetEmployeeById | null> =>
   await db(EMPLOYEE_TABLE)
     .select(
-      // Employee fields
-      "master_employees.*",
+      `${EMPLOYEE_TABLE}.*`,
 
       // Position fields
-      "master_positions.position_code",
-      "master_positions.name as position_name",
+      `${POSITION_TABLE}.position_code`,
+      `${POSITION_TABLE}.name as position_name`,
 
       // Division fields
-      "master_divisions.division_code as division_code",
-      "master_divisions.name as division_name",
+      `${DIVISION_TABLE}.division_code as division_code`,
+      `${DIVISION_TABLE}.name as division_name`,
 
       // Department fields
-      "master_departments.department_code as department_code",
-      "master_departments.name as department_name"
+      `${DEPARTMENT_TABLE}.department_code as department_code`,
+      `${DEPARTMENT_TABLE}.name as department_name`
     )
     .leftJoin(
-      "master_positions",
-      "master_employees.position_code",
-      "master_positions.position_code"
+      `${POSITION_TABLE}`,
+      `${EMPLOYEE_TABLE}.position_code`,
+      `${POSITION_TABLE}.position_code`
     )
     .leftJoin(
-      "master_divisions",
-      "master_positions.division_code",
-      "master_divisions.division_code"
+      `${DIVISION_TABLE}`,
+      `${POSITION_TABLE}.division_code`,
+      `${DIVISION_TABLE}.division_code`
     )
     .leftJoin(
-      "master_departments",
-      "master_divisions.department_code",
-      "master_departments.department_code"
+      `${DEPARTMENT_TABLE}`,
+      `${DIVISION_TABLE}.department_code`,
+      `${DEPARTMENT_TABLE}.department_code`
     )
     .where({ "master_employees.employee_code": code })
+    .first();
+
+/**
+ * Get employee by user code.
+ */
+export const getMasterEmployeesByUserCode = async (
+  userCode: string
+): Promise<{ employee_code: string } | null> =>
+  await db(EMPLOYEE_TABLE)
+    .select("employee_code")
+    .where({ user_code: userCode })
     .first();
 
 /**
@@ -199,6 +213,9 @@ export const editMasterEmployeesByCode = async (
 export const removeMasterEmployees = async (id: number): Promise<number> =>
   await db(EMPLOYEE_TABLE).where({ id }).delete();
 
+/**
+ * Get Total Current Employee
+ */
 export const totalMasterEmployees = async (): Promise<number> => {
   const [totalMasterEmployeeResult] = await db(EMPLOYEE_TABLE).count(
     "id as total_employees"
@@ -208,6 +225,5 @@ export const totalMasterEmployees = async (): Promise<number> => {
     String(totalMasterEmployeeResult.total_employees || 0),
     10
   );
-
   return totalMasterEmployees;
 };
