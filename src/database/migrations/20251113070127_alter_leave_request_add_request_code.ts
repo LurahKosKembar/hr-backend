@@ -44,6 +44,8 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0");
+
   try {
     await knex.schema.alterTable(LEAVE_REQUESTS_TABLE, (table) => {
       table.dropForeign(["employee_code"]);
