@@ -3,6 +3,7 @@ import {
   DEPARTMENT_TABLE,
   DIVISION_TABLE,
   EMPLOYEE_TABLE,
+  OFFICE_TABLE,
   POSITION_TABLE,
 } from "@constants/database.js";
 import {
@@ -49,16 +50,20 @@ export const getAllMasterEmployees = async (): Promise<GetAllEmployee[]> =>
       `${EMPLOYEE_TABLE}.position_code`,
       `${EMPLOYEE_TABLE}.employment_status`,
 
+      // Office fields
+      `${OFFICE_TABLE}.office_code`,
+      `${OFFICE_TABLE}.name as office_name`,
+
       // Position fields
       `${POSITION_TABLE}.position_code`,
       `${POSITION_TABLE}.name as position_name`,
 
       // Division fields
-      `${DIVISION_TABLE}.division_code as division_code`,
+      `${DIVISION_TABLE}.division_code`,
       `${DIVISION_TABLE}.name as division_name`,
 
       // Department fields
-      `${DEPARTMENT_TABLE}.department_code as department_code`,
+      `${DEPARTMENT_TABLE}.department_code`,
       `${DEPARTMENT_TABLE}.name as department_name`
     )
     .leftJoin(
@@ -75,6 +80,11 @@ export const getAllMasterEmployees = async (): Promise<GetAllEmployee[]> =>
       `${DEPARTMENT_TABLE}`,
       `${DIVISION_TABLE}.department_code`,
       `${DEPARTMENT_TABLE}.department_code`
+    )
+    .leftJoin(
+      `${OFFICE_TABLE}`,
+      `${EMPLOYEE_TABLE}.office_code`,
+      `${OFFICE_TABLE}.office_code`
     );
 
 /**
@@ -87,6 +97,9 @@ export const getMasterEmployeesById = async (
     .select(
       `${EMPLOYEE_TABLE}.*`,
 
+      // Office fields
+      `${OFFICE_TABLE}.name as office_name`,
+
       // Position fields
       `${POSITION_TABLE}.position_code`,
       `${POSITION_TABLE}.name as position_name`,
@@ -113,6 +126,11 @@ export const getMasterEmployeesById = async (
       `${DEPARTMENT_TABLE}`,
       `${DIVISION_TABLE}.department_code`,
       `${DEPARTMENT_TABLE}.department_code`
+    )
+    .leftJoin(
+      `${OFFICE_TABLE}`,
+      `${EMPLOYEE_TABLE}.office_code`,
+      `${OFFICE_TABLE}.office_code`
     )
     .where({ "master_employees.id": id })
     .first();
@@ -127,6 +145,9 @@ export const getMasterEmployeesByCode = async (
     .select(
       `${EMPLOYEE_TABLE}.*`,
 
+      // Office fields
+      `${OFFICE_TABLE}.name as office_name`,
+
       // Position fields
       `${POSITION_TABLE}.position_code`,
       `${POSITION_TABLE}.name as position_name`,
@@ -153,6 +174,11 @@ export const getMasterEmployeesByCode = async (
       `${DEPARTMENT_TABLE}`,
       `${DIVISION_TABLE}.department_code`,
       `${DEPARTMENT_TABLE}.department_code`
+    )
+    .leftJoin(
+      `${OFFICE_TABLE}`,
+      `${EMPLOYEE_TABLE}.office_code`,
+      `${OFFICE_TABLE}.office_code`
     )
     .where({ "master_employees.employee_code": code })
     .first();

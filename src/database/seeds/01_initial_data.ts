@@ -9,8 +9,10 @@ const TABLE_KEYS = {
   POSITIONS: "master_positions",
   DIVISIONS: "master_divisions",
   DEPARTMENTS: "master_departments",
+  OFFICES: "master_offices",
   LEAVE_TYPES: "master_leave_types",
   LEAVE_BALANCES: "leave_balances",
+  LEAVE_REQUEST: "leave_requests",
   PAYROLL_PERIODS: "payroll_periods",
   ATTENDANCES: "attendances",
   ATTENDANCE_SESSION_TABLE: "attendance_sessions",
@@ -20,9 +22,11 @@ export async function seed(knex: Knex): Promise<void> {
   // 1. Deletes ALL existing entries in reverse order of dependency
   await knex(TABLE_KEYS.ATTENDANCES).del();
   await knex(TABLE_KEYS.ATTENDANCE_SESSION_TABLE).del();
-  await knex(TABLE_KEYS.USERS).del();
   await knex(TABLE_KEYS.LEAVE_BALANCES).del();
+  await knex(TABLE_KEYS.LEAVE_REQUEST).del();
   await knex(TABLE_KEYS.EMPLOYEES).del();
+  await knex(TABLE_KEYS.OFFICES).del();
+  await knex(TABLE_KEYS.USERS).del();
   await knex(TABLE_KEYS.POSITIONS).del();
   await knex(TABLE_KEYS.DIVISIONS).del();
   await knex(TABLE_KEYS.DEPARTMENTS).del();
@@ -278,7 +282,38 @@ export async function seed(knex: Knex): Promise<void> {
     },
   ]);
 
-  // 6. Seed the User
+  // 5. Seed Offices
+  await knex(TABLE_KEYS.OFFICES).insert([
+    {
+      office_code: "OFC0000001",
+      name: "Head Office Jakarta",
+      address:
+        "Menara Sudirman Lt. 15, Jl. Jend. Sudirman Kav. 60, Senayan, Jakarta Selatan",
+      latitude: -6.224026,
+      longitude: 106.809132,
+      radius_meters: 50,
+    },
+    {
+      office_code: "OFC0000002",
+      name: "Branch Office Bandung",
+      address:
+        "Jl. Asia Afrika No. 65, Braga, Kec. Sumur Bandung, Kota Bandung, Jawa Barat",
+      latitude: -6.921474,
+      longitude: 107.611654,
+      radius_meters: 30, // Smaller radius for a shophouse/smaller office
+    },
+    {
+      office_code: "OFC0000003",
+      name: "Warehouse Surabaya",
+      address:
+        "Kawasan Industri Rungkut, Jl. Rungkut Industri Raya No. 10, Surabaya, Jawa Timur",
+      latitude: -7.330523,
+      longitude: 112.763312,
+      radius_meters: 100, // Larger radius for a large warehouse complex
+    },
+  ]);
+
+  // 7. Seed the User
   const password = process.env.DEFAULT_ADMIN_PASSWORD || "Password123!";
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -307,8 +342,9 @@ export async function seed(knex: Knex): Promise<void> {
   await knex(TABLE_KEYS.EMPLOYEES).insert([
     {
       employee_code: "KWN0000001",
-      // user_code: "USR0000001",
+      user_code: "USR0000001",
       position_code: "POS0000001", // Software Engineer
+      office_code: "OFC0000001",
       full_name: "Budi Pratama",
       ktp_number: "3578123409876543",
       birth_place: "Surabaya",
@@ -333,6 +369,7 @@ export async function seed(knex: Knex): Promise<void> {
       employee_code: "KWN0000002",
       user_code: "USR0000002",
       position_code: "POS0000006", // Recruitment Officer
+      office_code: "OFC0000002",
       full_name: "Siti Rahmawati",
       ktp_number: "3578012345678912",
       birth_place: "Malang",
@@ -357,6 +394,7 @@ export async function seed(knex: Knex): Promise<void> {
       employee_code: "KWN0000003",
       user_code: "USR0000003",
       position_code: "POS0000014", // Accountant
+      office_code: "OFC0000002",
       full_name: "Andi Setiawan",
       ktp_number: "3578456712345678",
       birth_place: "Jakarta",

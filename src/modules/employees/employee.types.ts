@@ -3,6 +3,7 @@ export interface Employee {
   employee_code: string;
   user_code: string;
   position_code: string;
+  office_code: string;
   full_name: string;
 
   ktp_number: string | null;
@@ -50,6 +51,8 @@ export interface GetAllEmployee {
   division_name: string;
   department_code: string;
   department_name: string;
+  office_code: string;
+  office_name: string;
   user_code: string;
   email: string;
   employment_status: "aktif" | "inaktif";
@@ -59,6 +62,7 @@ export interface CreateEmployee {
   // required fields
   user_code: string;
   position_code: string;
+  office_code: string;
   full_name: string;
   join_date: string;
 
@@ -86,6 +90,7 @@ export interface UpdateEmployee {
   id: number;
   user_code?: string;
   position_code?: string;
+  office_code?: string;
   full_name?: string;
   join_date?: string;
 
@@ -112,6 +117,7 @@ export interface UpdateEmployee {
 export interface UpdateEmployeeByCode {
   employee_code: string;
   position_code?: string;
+  office_code?: string;
   full_name?: string;
   join_date?: string;
 

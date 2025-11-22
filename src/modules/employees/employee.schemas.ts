@@ -4,6 +4,7 @@ export const addMasterEmployeesSchema = z.object({
   // required fields
   user_code: z.string().length(10, "Kode user harus tepat 10 karakter"),
   position_code: z.string().length(10, "Kode posisi harus tepat 10 karakter"),
+  office_code: z.string().length(10, "Kode kantor harus tepat 10 karakter"),
   full_name: z
     .string({ required_error: "Nama panjang wajib diisi" })
     .min(3, "Nama panjang minimal 3 karakter")
@@ -92,6 +93,10 @@ export const updateMasterEmployeesSchema = z
     position_code: z
       .string()
       .length(10, "Kode posisi harus tepat 10 karakter")
+      .optional(),
+    office_code: z
+      .string()
+      .length(10, "Kode kantor harus tepat 10 karakter")
       .optional(),
     full_name: z
       .string({ required_error: "Nama panjang wajib diisi" })
