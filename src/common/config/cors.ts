@@ -1,14 +1,24 @@
 import { CorsOptions } from "cors";
+import { config } from "dotenv";
 
-const allowedOrigins: string[] = ["http://localhost:3000"];
+config();
+
+const allowedOriginsString: string =
+  process.env.ALLOWED_ORIGINS || "http://localhost:3000";
+
+const allowedOrigins: string[] = allowedOriginsString
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter((origin) => origin.length > 0);
 
 export const corsOptions: CorsOptions = {
+  // Use the parsed array
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl) or from allowed list
+    // If no origin is provided (e.g., same-origin request, mobile app, tool like Postman)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
