@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { TokenPayload } from "../common/utils/jwt.js"; // Adjust path
+import { TokenPayload } from "@utils/jwt.js"; // Adjust path
 import { errorResponse } from "src/common/utils/response.js";
 import { API_STATUS } from "src/common/constants/general.js";
 import { appLogger } from "src/common/utils/logger.js";

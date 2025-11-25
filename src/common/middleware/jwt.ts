@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import * as jose from "jose";
-import { TokenPayload } from "../common/utils/jwt.js";
-import { API_STATUS } from "src/common/constants/general.js";
-import { appLogger } from "src/common/utils/logger.js";
-import { errorResponse } from "src/common/utils/response.js";
+import { TokenPayload } from "@utils/jwt.js";
+import { API_STATUS } from "@constants/general.js";
+import { appLogger } from "@utils/logger.js";
+import { errorResponse } from "@utils/response.js";
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;
